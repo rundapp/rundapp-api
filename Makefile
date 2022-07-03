@@ -27,10 +27,10 @@ make run-container:
 
 test: build
 	function removeContainers {
-		docker-compose -p blockrunner-api-continuous-integration rm -s -f test_db
+		docker-compose -p rundapp-api-continuous-integration rm -s -f test_db
 	}
 	trap removeContainers EXIT
-	docker-compose -p blockrunner-api-continuous-integration run --rm continuous-integration
+	docker-compose -p rundapp-api-continuous-integration run --rm continuous-integration
 
 
 migration:

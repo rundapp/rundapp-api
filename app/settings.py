@@ -9,16 +9,16 @@ class Settings(BaseSettings):
     """Application Settings and Environment Variables"""
 
     # Application Settings
-    application_name: str = "run-tracker"
+    application_name: str = "rundapp"
     environment: str = "development"
     log_level: str = "info"
     server_host: str = "0.0.0.0"
-    server_port: int = 8000
+    server_port: int
     server_prefix: str = ""
     openapi_url: str = "/openapi.json"
 
     # Database Settings
-    # db_url: str
+    db_url: str
 
     # Strava Settings
     verify_token: str

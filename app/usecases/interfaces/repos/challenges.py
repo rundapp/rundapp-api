@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
-
+from typing import Optional, List
 from app.usecases.schemas.challenges import (
     ChallengeBase,
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
+    ChallengeJoinPayment,
+    RetrieveChallengesAdapter
 )
 
 
@@ -23,11 +23,7 @@ class IChallengesRepo(ABC):
     @abstractmethod
     async def retrieve_many(
         self,
-        challengee_user_id: Optional[int] = None,
-        challenger_user_id: Optional[int] = None,
-        challengee_address: Optional[int] = None,
-        challenger_address: Optional[int] = None,
-        complete_value: Optional[bool] = None,
+        query_params: RetrieveChallengesAdapter,
     ) -> List[ChallengeJoinPaymentAndUsers]:
         """Retreives challenge objects by specified query parameters."""
 

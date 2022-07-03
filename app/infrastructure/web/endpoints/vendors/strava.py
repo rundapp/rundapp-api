@@ -40,7 +40,7 @@ async def receive_webhook(
 
     elif body.aspect_type == "update" and body.updates.get("authorized") == False:
         # The user revoked access to this application
-        await strava_repo.update(updated_access=StravaAccessUpdateAdapter(scope=[]))
+        await strava_repo.update(athlete_id=body.owner_id, updated_access=StravaAccessUpdateAdapter(scope=[]))
 
 
 @strava_router.get(

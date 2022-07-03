@@ -74,6 +74,7 @@ class ChallengeValidation(IChallengeValidation):
             )
 
             return await self.strava_repo.update(
+                athlete_id=athlete_id,
                 updated_access=StravaAccessUpdateAdapter(
                     access_token=new_access.access_token,
                     refresh_token=new_access.refresh_token,

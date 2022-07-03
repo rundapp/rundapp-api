@@ -60,7 +60,7 @@ class EmailManager(IEmailManager):
         "Ether if you complete the challenge.\n\nIn order to complete this challenge, "
         "please provide Rundapp access to your Strava account using the following link. "
         "If you do not already have a Strava account, this same link will prompt you to create one: "
-        f"https://www.strava.com/oauth/authorize?client_id=88040&response_type=code&redirect_uri=http://www.blockrunner.quest?user_id={participants.challengee.id}&approval_prompt=force&scope=read_all,activity:read_all"
+        f"https://www.strava.com/oauth/authorize?client_id=88040&response_type=code&redirect_uri=http://www.rundapp.quest?user_id={participants.challengee.id}&approval_prompt=force&scope=read_all,activity:read_all"
 
         # 2. Notify Challengee.
         await self.send(

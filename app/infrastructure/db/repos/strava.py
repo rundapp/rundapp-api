@@ -45,7 +45,7 @@ class StravaRepo(IStravaRepo):
         return await self.retrieve(athlete_id == athlete_id)
 
     async def retrieve(
-        self, athlete_id: int, user_id: int
+        self, athlete_id: Optional[int] = None, user_id: Optional[int] = None
     ) -> Optional[StravaAccessInDb]:
         """Retreives and returns an access object by id."""
 
@@ -68,7 +68,7 @@ class StravaRepo(IStravaRepo):
         return StravaAccessInDb(**result) if result else None
 
     async def update(
-        self, updated_access: StravaAccessUpdateAdapter
+        self, athlete_id: int, updated_access: StravaAccessUpdateAdapter
     ) -> StravaAccessInDb:
         """Updates an access object."""
 
@@ -80,8 +80,8 @@ class StravaRepo(IStravaRepo):
             if value is not None:
                 updated_access_dict[key] = value
 
-        update_statement = query_prefix.values(updated_access_dict)
+        update_statement = query_prefix.values(updated_access_dict).where(STRAVA_ACCESS.c.athlete_id == athlete_id)
 
-        athlete_id = await self.db.execute(update_statement)
+        await self.db.execute(update_statement)
 
         return await self.retrieve(athlete_id=athlete_id)

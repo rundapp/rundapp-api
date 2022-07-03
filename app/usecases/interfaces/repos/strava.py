@@ -15,12 +15,12 @@ class IStravaRepo(ABC):
 
     @abstractmethod
     async def retrieve(
-        self, athlete_id: int, user_id: int
+        self, athlete_id: Optional[int] = None, user_id: Optional[int] = None
     ) -> Optional[StravaAccessInDb]:
         """Retreives and returns an access object by id."""
 
     @abstractmethod
     async def update(
-        self, updated_access: StravaAccessUpdateAdapter
+        self, athlete_id: int, updated_access: StravaAccessUpdateAdapter
     ) -> StravaAccessInDb:
         """Updates an access object."""
