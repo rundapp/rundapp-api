@@ -3,7 +3,6 @@ import databases
 from app.dependencies import logger
 from app.settings import settings
 
-
 DATABASE = None
 
 

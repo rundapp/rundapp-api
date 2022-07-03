@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+    blockrunner-api:                    
+        build: .
+        ports:
+        - "8000:8000"
+        container_name: blockrunner-api
+        env_file: 
+        - .env
+        depends_on:
+        - db   
+
+    continuous-integration:
+        container_name: blockrunner-api-continuous-integration
+        image: "blockrunner/blockrunner-api"
+        env_file:
+            - tests.env
+        entrypoint: /app/continuous_integration/initiate_tests.sh
+        depends_on:
+            - test_db
+
+    test_db:
+        image: library/postgres:12-alpine
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_PORT=5444
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=blockrunner-dev-test
+        ports:
+            - 5444:5444
+        command: -p 5444
+
+    db:
+        image: library/postgres:12-alpine
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=blockrunner-dev
+        ports:
+            - 5432:5432

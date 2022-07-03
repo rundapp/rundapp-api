@@ -1,6 +1,4 @@
 # pylint: disable = global-statement
-from app.infrastructure.db.models.public.portfolio import ASSETS
-from app.infrastructure.db.metadata import METADATA
 import pathlib
 import sys
 from logging.config import fileConfig
@@ -9,6 +7,9 @@ from os import getenv
 from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
+
+from app.infrastructure.db.metadata import METADATA
+from app.infrastructure.db.models.public.portfolio import ASSETS
 
 sys.path[0] = str(pathlib.Path(__file__).parents[1].resolve())
 load_dotenv()
@@ -42,10 +43,10 @@ postgres_host = getenv("POSTGRES_HOST", default="localhost")
 postgres_port = getenv("POSTGRES_PORT", default=5432)
 postgres_user = getenv("POSTGRES_USER", default="postgres")
 postgres_password = getenv("POSTGRES_PASSWORD", default="postgres")
-postgres_database = getenv("POSTGRES_DB", default="pelleum-dev")
+postgres_database = getenv("POSTGRES_DB", default="blockrunner-dev")
 
 url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}"
-# url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:5444/pelleum-dev-test"
+# url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:5444/blockrunner-dev-test"
 config.set_main_option("sqlalchemy.url", url)
 
 

@@ -1,4 +1,3 @@
-from app.infrastructure.web.endpoints.vendors import strava
 import click
 import uvicorn
 from fastapi import FastAPI
@@ -6,8 +5,8 @@ from fastapi import FastAPI
 from app.dependencies import get_client_session, get_event_loop
 from app.infrastructure.db.core import get_or_create_database
 from app.infrastructure.web.endpoints import health
+from app.infrastructure.web.endpoints.public import challenges
 from app.infrastructure.web.endpoints.vendors import strava
-
 from app.settings import settings
 
 
@@ -19,6 +18,7 @@ def setup_app():
     )
     app.include_router(health.health_router, prefix="/health")
     app.include_router(strava.strava_router, prefix="/vendors/strava")
+    app.include_router(challenges.challenges_router, prefix="/challenges")
 
     return app
 

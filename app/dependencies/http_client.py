@@ -1,6 +1,6 @@
 from typing import Optional
-from aiohttp import ClientSession
 
+from aiohttp import ClientSession
 
 client_session: Optional[ClientSession] = None
 

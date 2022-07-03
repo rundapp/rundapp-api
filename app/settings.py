@@ -20,6 +20,21 @@ class Settings(BaseSettings):
     # Database Settings
     # db_url: str
 
+    # Strava Settings
+    verify_token: str
+    client_id: str
+    client_secret: str
+    strava_base_url: str = "https://www.strava.com/api/v3"
+
+    # Ethereum Settings
+    private_key: str
+
+    # Sendgrid Settings
+    sendgrid_api_key: str
+
+    # Miscellaneous Settings
+    sender_email_address: str
+
     class Config:
         env_file = DOTENV_FILE
 
