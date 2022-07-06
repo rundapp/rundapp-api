@@ -43,7 +43,7 @@ async def issue_challenge(
     response_model=ClaimBountyResponse,
 )
 async def claim_challenge_bounty(
-    address: constr(max_length=100) = Query(...),
+    address: constr(min_length=42, max_length=42) = Query(...),
     users_repo: IUsersRepo = Depends(get_users_repo),
     challenge_manager_service: IChallengeManager = Depends(
         get_challenge_manager_service

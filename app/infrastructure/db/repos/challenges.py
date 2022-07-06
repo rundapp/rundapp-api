@@ -7,7 +7,7 @@ from app.infrastructure.db.models.challenges import CHALLENGES, PAYMENTS
 from app.infrastructure.db.models.users import USERS
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.schemas.challenges import (
-    ChallengeBase,
+    CreateChallengeRepoAdapter,
     ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
     RetrieveChallengesAdapter,
@@ -18,7 +18,7 @@ class ChallengesRepo(IChallengesRepo):
     def __init__(self, db: Database):
         self.db = db
 
-    async def create(self, new_challenge: ChallengeBase) -> ChallengeJoinPayment:
+    async def create(self, new_challenge: CreateChallengeRepoAdapter) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
         insert_statement = CHALLENGES.insert().values(
@@ -46,13 +46,16 @@ class ChallengesRepo(IChallengesRepo):
     async def retrieve(
         self,
         id: int,
-    ) -> Optional[ChallengeJoinPayment]:
+    ) -> Optional[ChallengeJoinPaymentAndUsers]:
         """Retreives challenge object with payment information by id."""
 
-        j = CHALLENGES.join(PAYMENTS, CHALLENGES.c.id == PAYMENTS.c.challenge_id)
+        j = CHALLENGES.join(PAYMENTS, CHALLENGES.c.id == PAYMENTS.c.challenge_id).join(
+            USERS, CHALLENGES.c.challengee == USERS.c.id
+        )
 
         columns_to_select = [
             CHALLENGES,
+            USERS.c.address,
             PAYMENTS.c.id.label("payment_id"),
             PAYMENTS.c.complete.label("payment_complete"),
         ]
@@ -61,7 +64,7 @@ class ChallengesRepo(IChallengesRepo):
 
         result = await self.db.fetch_one(query)
 
-        return ChallengeJoinPayment(**result) if result else None
+        return ChallengeJoinPaymentAndUsers(**result) if result else None
 
     async def retrieve_many(
         self,
@@ -119,7 +122,7 @@ class ChallengesRepo(IChallengesRepo):
 
         return [ChallengeJoinPaymentAndUsers(**result) for result in results]
 
-    async def update_challenge(self, id: int) -> ChallengeJoinPayment:
+    async def update_challenge(self, id: int) -> ChallengeJoinPaymentAndUsers:
         """Marks a challenge as complete."""
 
         update_statement = (

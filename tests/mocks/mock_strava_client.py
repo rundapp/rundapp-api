@@ -1,7 +1,8 @@
 from typing import Any, Mapping
 
 from app.usecases.interfaces.clients.strava import IStravaClient
-from app.usecases.schemas.strava import RefreshTokenResponse, TokenExchangeResponse,
+from app.usecases.schemas.strava import RefreshTokenResponse, TokenExchangeResponse
+from tests.conftest import CHALLENGE_PASSING_ACTIVITY_ID, CHALLENGE_FAILING_DISTANCE, CHALLENGE_PASSING_DISTANCE
 
 
 class MockStravaClient(IStravaClient):
@@ -40,8 +41,10 @@ class MockStravaClient(IStravaClient):
     ) -> Mapping[str, Any]:
         """Retrieves a Strava athlete's activity. Returns a massive JSON response."""
 
+        distance = CHALLENGE_PASSING_DISTANCE if activity_id == CHALLENGE_PASSING_ACTIVITY_ID else CHALLENGE_FAILING_DISTANCE
+
         return {
-            "distance": 9679.3,
+            "distance": distance,
             "type": "Run",
             "start_date": "2022-06-16T03:33:56Z",
             "map": {

@@ -9,31 +9,48 @@ from httpx import AsyncClient
 
 from app.infrastructure.web.setup import setup_app
 
-
 from tests.mocks.mock_strava_client import MockStravaClient
 # Interfaces
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.repos.strava import IStravaRepo
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
+from app.usecases.interfaces.services.challange_manager import IChallengeManager
+from app.usecases.interfaces.services.signature_manager import ISignatureManager
+from app.usecases.interfaces.services.email_manager import IEmailManager
+from app.usecases.interfaces.services.challange_validation import IChallengeValidation
 
 # Implementations
 from app.infrastructure.db.repos.users import UsersRepo
 from app.infrastructure.db.repos.strava import StravaRepo
 from app.infrastructure.db.repos.challenges import ChallengesRepo
+from app.usecases.services.challenge_manager import ChallengeManager
+from app.usecases.services.signature_manager import SignatureManager
+from app.usecases.services.email_manager import EmailManager
+from app.usecases.services.challenge_validation import ChallengeValidation
 
 # Schemas
 from app.usecases.schemas.users import UserInDb, UserBase
 from app.usecases.schemas.strava import CreateStravaAccessAdapter, StravaAccessInDb
-from app.usecases.schemas.challenges import ChallengeBase, ChallengeJoinPayment
+from app.usecases.schemas.challenges import CreateChallengeRepoAdapter, ChallengeJoinPaymentAndUsers
 
 
 from app.dependencies import (
     get_users_repo,
-    get_strava_repo
+    get_strava_repo,
+    get_strava_client,
+    get_challenges_repo,
+    get_challenge_manager_service,
+    get_challenge_validation_service
 )
 
-
+# Testing Constants
+CHALLENGE_PASSING_ACTIVITY_ID = 1
+CHALLENGE_PASSING_DISTANCE = 10000.0
+CHALLENGE_FAILING_ACTIVITY_ID = 2
+CHALLENGE_FAILING_DISTANCE = 5000.0
+CHALLENGER_ADDRESS = "0xb794f5ea0ba39494ce839613fffba74279579268"
+CHALLENGEE_ADDRESS = "0x9E81eC9222C4F5F4B5f5C442033C94111C281657"
 DEFAULT_NUMBER_OF_INSERTED_OBJECTS = 3
 
 # Database Connection
@@ -80,6 +97,47 @@ async def challenges_repo(test_db: Database) -> IChallengesRepo:
 async def strava_client() -> IStravaClient:
     return MockStravaClient()
 
+# Services
+@pytest_asyncio.fixture
+async def signature_manager_service() -> ISignatureManager:
+    return SignatureManager()
+
+@pytest_asyncio.fixture
+async def email_manager_service(strava_repo: IStravaRepo) -> IEmailManager:
+    return EmailManager(strava_repo=strava_repo)
+
+
+@pytest_asyncio.fixture
+async def challenge_validation_service(
+    strava_client: IStravaClient,
+    strava_repo: IStravaRepo,
+    challenges_repo: IChallengesRepo,
+    email_manager_service: IEmailManager
+) -> IChallengeValidation:
+    
+    return ChallengeValidation(
+        strava_client=strava_client,
+        strava_repo=strava_repo,
+        challenges_repo=challenges_repo,
+        email_manager=email_manager_service,
+    )
+
+
+@pytest_asyncio.fixture
+async def challenge_manager_service(
+    users_repo: IUsersRepo,
+    challenges_repo: IChallengesRepo,
+    signature_manager_service:  ISignatureManager, 
+    email_manager_service: IEmailManager
+) -> IChallengeManager:
+    """ChallangerManager with test services and test repos."""
+    return ChallengeManager(
+        users_repo=users_repo,
+        challenges_repo=challenges_repo,
+        signature_manager=signature_manager_service,
+        email_manager=email_manager_service,
+    )
+
 
 # Database-inserted Objects
 @pytest_asyncio.fixture
@@ -101,7 +159,7 @@ async def two_inserted_user_objects(
 ) -> List[UserInDb]:
     """Inserts a user object into the database for other tests."""
 
-    addresses = ("0xb794f5ea0ba39494ce839613fffba74279579268", "0x9E81eC9222C4F5F4B5f5C442033C94111C281657")
+    addresses = (CHALLENGER_ADDRESS, CHALLENGEE_ADDRESS)
 
     two_users = []
     for count, address in enumerate(addresses):
@@ -140,50 +198,57 @@ async def inserted_strava_access_object(
     )
 
 @pytest_asyncio.fixture
-async def challenge_base(
+async def create_challenge_repo_adapter(
     two_inserted_user_objects: List[UserInDb],
-) -> ChallengeBase:
-    return ChallengeBase(
+) -> CreateChallengeRepoAdapter:
+    return CreateChallengeRepoAdapter(
         challenger=two_inserted_user_objects[0],
         challengee=two_inserted_user_objects[1],
         bounty=1000,
-        distance=10.0,
-        pace=3
+        distance=8000.0, # 8 kilometers
+        pace=400        # seconds / kilometer
     )
 
 @pytest_asyncio.fixture
 async def inserted_challenge_object(
-    challenge_base: ChallengeBase,
+    create_challenge_repo_adapter: CreateChallengeRepoAdapter,
     challenges_repo: IChallengesRepo
-) -> ChallengeJoinPayment:
+) -> ChallengeJoinPaymentAndUsers:
     """Inserts a user object into the database for other tests."""
     
-    return await challenges_repo.create(new_challenge=challenge_base)
+    return await challenges_repo.create(new_challenge=create_challenge_repo_adapter)
 
 
 @pytest_asyncio.fixture
 async def many_inserted_challenge_objects(
-    challenge_base: ChallengeBase,
+    create_challenge_repo_adapter: CreateChallengeRepoAdapter,
     challenges_repo: IChallengesRepo
-) -> List[ChallengeJoinPayment]:
+) -> List[ChallengeJoinPaymentAndUsers]:
     """Inserts a user object into the database for other tests."""
     
     created_challenges = []
     for i, _ in enumerate(range(DEFAULT_NUMBER_OF_INSERTED_OBJECTS)):
-        created_challenges.append(await challenges_repo.create(new_challenge=challenge_base))
+        created_challenges.append(await challenges_repo.create(new_challenge=create_challenge_repo_adapter))
 
     return created_challenges
 
 
 @pytest_asyncio.fixture
 def test_app(
-    inserted_user_object: UserInDb,
+    strava_repo: IStravaRepo,
+    strava_client: IStravaClient,
+    get_challenges_repo: IChallengesRepo,
+    challenge_manager_service: IChallengeManager,
+    challenge_validation_service: IChallengeValidation,
     user_repo: IUsersRepo,
-
 ) -> FastAPI:
     app = setup_app()
     app.dependency_overrides[get_users_repo] = lambda: user_repo
-
+    app.dependency_overrides[get_strava_repo] = lambda: strava_repo
+    app.dependency_overrides[get_strava_client] = lambda: strava_client
+    app.dependency_overrides[get_challenges_repo] = lambda: get_challenges_repo
+    app.dependency_overrides[get_challenge_manager_service] = lambda: challenge_manager_service
+    app.dependency_overrides[get_challenge_validation_service] = lambda: challenge_validation_service
     return app
 
 

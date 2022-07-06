@@ -1,22 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
 
 class ChallengeBase(BaseModel):
     """A base challenge object."""
-
-    challenger: int = Field(
-        ...,
-        description="A foreign key user ID that represents the person that issued the challenge.",
-        example=23456,
-    )
-    challengee: int = Field(
-        ...,
-        description="A foreign key user ID that represents the person that was challenged.",
-        example=34567,
-    )
     bounty: int = Field(
         ...,
         description="The amount in WEI the challengee receives upon challenge completion.",
@@ -34,7 +23,22 @@ class ChallengeBase(BaseModel):
     )
 
 
-class ChallengeInDb(ChallengeBase):
+class CreateChallengeRepoAdapter(ChallengeBase):
+    """Model used to save new challenge in database."""
+    challenger: int = Field(
+        ...,
+        description="A foreign key user ID that represents the person that issued the challenge.",
+        example=23456,
+    )
+    challengee: int = Field(
+        ...,
+        description="A foreign key user ID that represents the person that was challenged.",
+        example=34567,
+    )
+
+
+
+class ChallengeInDb(CreateChallengeRepoAdapter):
     """Database Model."""
 
     id: str = Field(..., description="The challenge ID in database.", example=12345)
@@ -111,22 +115,22 @@ class BountyVerification(BaseModel):
 class IssueChallengeBody(ChallengeBase):
     """JSON body sent when a challenge is issued."""
 
-    challenger_email: str = Field(
+    challenger_email: constr(max_length=100) = Field(
         ...,
         description="The email addresss of the challenger.",
         example="challenger@example.com",
     )
-    challengee_email: str = Field(
+    challengee_email: constr(max_length=100) = Field(
         ...,
         description="The email addresss of the challengee.",
         example="challengee@example.com",
     )
-    challengee_address: Optional[str] = Field(
+    challengee_address: Optional[constr(min_length=42, max_length=42)] = Field(
         None,
         description="The Ethereum addresss of the challengee.",
         example="0xcF107AdC80c7F7b5eE430B52744F96e2D76681a2",
     )
-    challenger_address: str = Field(
+    challenger_address: constr(min_length=42, max_length=42) = Field(
         ...,
         description="The Ethereum addresss of the challenger.",
         example="0x63958fDFA9DAF21bb9bE4312c3f53cb080DA80D8",

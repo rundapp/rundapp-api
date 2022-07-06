@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.dependencies import get_client_session, get_event_loop
 from app.infrastructure.db.core import get_or_create_database
-from app.infrastructure.web.endpoints import health
+from app.infrastructure.web.endpoints.metrics import health
 from app.infrastructure.web.endpoints.public import challenges
 from app.infrastructure.web.endpoints.vendors import strava
 from app.settings import settings
@@ -16,9 +16,9 @@ def setup_app():
         description="The following are endpoints for the Pelleum mobile appliaction to utilize.",
         openapi_url=settings.openapi_url,
     )
-    app.include_router(health.health_router, prefix="/health")
+    app.include_router(health.health_router, prefix="/metrics/health")
     app.include_router(strava.strava_router, prefix="/vendors/strava")
-    app.include_router(challenges.challenges_router, prefix="/challenges")
+    app.include_router(challenges.challenges_router, prefix="/public/challenges")
 
     return app
 
@@ -30,7 +30,7 @@ fastapi_app = setup_app()
 async def startup_event():
     await get_event_loop()
     await get_client_session()
-    # await get_or_create_database()
+    await get_or_create_database()
 
 
 @fastapi_app.on_event("shutdown")

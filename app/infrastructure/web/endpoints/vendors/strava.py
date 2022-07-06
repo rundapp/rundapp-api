@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, Depends, Query
+from pydantic import constr
 
 from app.dependencies import (
     get_challenge_validation_service,
@@ -49,9 +50,9 @@ async def receive_webhook(
     response_model=WebhookVerificationResponse,
 )
 async def validate_webhook_subscription(
-    mode: str = Query(..., alias="hub.mode"),
-    token: str = Query(..., alias="hub.verify_token"),
-    challenge: str = Query(..., alias="hub.challenge"),
+    mode: constr(max_length=256) = Query(..., alias="hub.mode"),
+    token: constr(max_length=256) = Query(..., alias="hub.verify_token"),
+    challenge: constr(max_length=256) = Query(..., alias="hub.challenge"),
 ) -> WebhookVerificationResponse:
     """Echoes Strava challenge to validate webhook subscription."""
 

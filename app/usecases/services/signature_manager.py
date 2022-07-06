@@ -15,7 +15,7 @@ class SignatureManager(ISignatureManager):
 
         message = encode_defunct(text=challenge_id)
         signed_message = web3.eth.account.sign_message(
-            message, private_key=settings.private_key
+            message, private_key=settings.signer_private_key
         )
 
         return SignedMessage(

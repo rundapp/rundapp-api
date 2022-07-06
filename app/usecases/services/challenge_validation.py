@@ -60,7 +60,7 @@ class ChallengeValidation(IChallengeValidation):
             if all(challenge_requirements):
                 await self.challenges_repo.update_challenge(id=challenge.id)
 
-            # 5. Send Challenge Complete Notification Email
+            # 5. TODO: Send Challenge Complete Notification Email
 
     async def __obtain_access_object(self, athlete_id: int) -> StravaAccessInDb:
         """Returns athlete's access object. Access if refreshed if

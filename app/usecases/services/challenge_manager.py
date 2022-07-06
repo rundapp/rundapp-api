@@ -7,7 +7,7 @@ from app.usecases.interfaces.services.email_manager import IEmailManager
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
     BountyVerification,
-    ChallengeBase,
+    CreateChallengeRepoAdapter,
     ChallengeJoinPayment,
     IssueChallengeBody,
     RetrieveChallengesAdapter,
@@ -87,7 +87,7 @@ class ChallengeManager(IChallengeManager):
         # TODO: will likely have to convert to metric.
 
         return await self.challenges_repo.create(
-            new_challenge=ChallengeBase(
+            new_challenge=CreateChallengeRepoAdapter(
                 challenger=participants.challenger.id,
                 challengee=participants.challengee.id,
                 bounty=bounty,

@@ -4,20 +4,20 @@ import pytest
 
 from tests.conftest import DEFAULT_NUMBER_OF_INSERTED_OBJECTS
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
-from app.usecases.schemas.challenges import ChallengeBase, ChallengeJoinPayment, RetrieveChallengesAdapter
+from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers, CreateChallengeRepoAdapter, ChallengeJoinPayment, RetrieveChallengesAdapter
 
 
 
 @pytest.mark.asyncio
 async def test_create(
     challenges_repo: IChallengesRepo,
-    challenge_base: ChallengeBase
+    create_challenge_repo_adapter: CreateChallengeRepoAdapter
 ) -> None:
 
-    test_challenge = await challenges_repo.create(new_challenge=challenge_base)
+    test_challenge = await challenges_repo.create(new_challenge=create_challenge_repo_adapter)
 
-    assert isinstance(test_challenge, ChallengeJoinPayment)
-    for key, value in challenge_base.dict().items():
+    assert isinstance(test_challenge, ChallengeJoinPaymentAndUsers)
+    for key, value in create_challenge_repo_adapter.dict().items():
         assert value == test_challenge.dict()[key]
     
     assert test_challenge.complete == False
@@ -26,13 +26,13 @@ async def test_create(
 
 @pytest.mark.asyncio
 async def test_retrieve(
-    inserted_challenge_object: ChallengeJoinPayment,
+    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
     challenges_repo: IChallengesRepo,
 ) -> None:
 
     test_challenge = await challenges_repo.retrieve(id=inserted_challenge_object.id)
 
-    assert isinstance(test_challenge, ChallengeJoinPayment)
+    assert isinstance(test_challenge, ChallengeJoinPaymentAndUsers)
     for key, value in test_challenge.dict().items():
         assert value == inserted_challenge_object.dict()[key]
     
@@ -40,19 +40,19 @@ async def test_retrieve(
 
 @pytest.mark.asyncio
 async def test_retrieve_many(
-    many_inserted_challenge_objects: List[ChallengeJoinPayment],
+    many_inserted_challenge_objects: List[ChallengeJoinPaymentAndUsers],
     challenges_repo: IChallengesRepo,
 ) -> None:
 
     test_challenges = await challenges_repo.retrieve_many(query_params=RetrieveChallengesAdapter(challenge_complete=False))
 
-    assert isinstance(test_challenges, List[ChallengeJoinPayment])
+    assert isinstance(test_challenges, List[ChallengeJoinPaymentAndUsers])
     assert len(test_challenges) == DEFAULT_NUMBER_OF_INSERTED_OBJECTS
 
 
 @pytest.mark.asyncio
 async def test_update_challenge(
-    inserted_challenge_object: ChallengeJoinPayment,
+    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
     challenges_repo: IChallengesRepo,
 ) -> None:
 
@@ -60,14 +60,14 @@ async def test_update_challenge(
 
     updated_test_challenge = await challenges_repo.update_challenge(id=inserted_challenge_object.id)
 
-    assert isinstance(updated_test_challenge, ChallengeJoinPayment)
+    assert isinstance(updated_test_challenge, ChallengeJoinPaymentAndUsers)
     assert updated_test_challenge.complete
 
 
 
 @pytest.mark.asyncio
 async def test_update_payment(
-    inserted_challenge_object: ChallengeJoinPayment,
+    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
     challenges_repo: IChallengesRepo,
 ) -> None:
 

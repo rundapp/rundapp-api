@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     strava_base_url: str = "https://www.strava.com/api/v3"
 
     # Ethereum Settings
-    private_key: str
+    signer_private_key: str
 
     # Sendgrid Settings
     sendgrid_api_key: str

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 from app.usecases.schemas.challenges import (
-    ChallengeBase,
+    CreateChallengeRepoAdapter,
     ChallengeJoinPaymentAndUsers,
     ChallengeJoinPayment,
     RetrieveChallengesAdapter
@@ -10,14 +10,14 @@ from app.usecases.schemas.challenges import (
 
 class IChallengesRepo(ABC):
     @abstractmethod
-    async def create(self, new_challenge: ChallengeBase) -> ChallengeJoinPayment:
+    async def create(self, new_challenge: CreateChallengeRepoAdapter) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
     @abstractmethod
     async def retrieve(
         self,
         id: int,
-    ) -> Optional[ChallengeJoinPayment]:
+    ) -> Optional[ChallengeJoinPaymentAndUsers]:
         """Retreives a challenge with payment information."""
 
     @abstractmethod
@@ -28,7 +28,7 @@ class IChallengesRepo(ABC):
         """Retreives challenge objects by specified query parameters."""
 
     @abstractmethod
-    async def update_challenge(self, id: int) -> ChallengeJoinPayment:
+    async def update_challenge(self, id: int) -> ChallengeJoinPaymentAndUsers:
         """Updates a challenge."""
 
     @abstractmethod
