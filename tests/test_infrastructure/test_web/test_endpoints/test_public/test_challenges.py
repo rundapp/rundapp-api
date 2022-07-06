@@ -5,7 +5,7 @@ import pytest_asyncio
 from httpx import AsyncClient
 
 from app.usecases.schemas.challenges import ChallengeJoinPayment, ClaimBountyResponse
-from tests.conftest import CHALLENGEE_ADDRESS
+from tests.constants import CHALLENGEE_ADDRESS
 
 
 @pytest_asyncio.fixture

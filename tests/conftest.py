@@ -32,23 +32,14 @@ from app.usecases.schemas.challenges import (
     CreateChallengeRepoAdapter,
 )
 from app.usecases.schemas.strava import CreateStravaAccessAdapter, StravaAccessInDb
-
-# Schemas
 from app.usecases.schemas.users import UserBase, UserInDb
 from app.usecases.services.challenge_manager import ChallengeManager
 from app.usecases.services.challenge_validation import ChallengeValidation
 from app.usecases.services.email_manager import EmailManager
 from app.usecases.services.signature_manager import SignatureManager
+from tests.constants import CHALLENGEE_ADDRESS, CHALLENGER_ADDRESS, DEFAULT_NUMBER_OF_INSERTED_OBJECTS
 from tests.mocks.mock_strava_client import MockStravaClient
 
-# Testing Constants
-CHALLENGE_PASSING_ACTIVITY_ID = 1
-CHALLENGE_PASSING_DISTANCE = 10000.0
-CHALLENGE_FAILING_ACTIVITY_ID = 2
-CHALLENGE_FAILING_DISTANCE = 5000.0
-CHALLENGER_ADDRESS = "0xb794f5ea0ba39494ce839613fffba74279579268"
-CHALLENGEE_ADDRESS = "0x9E81eC9222C4F5F4B5f5C442033C94111C281657"
-DEFAULT_NUMBER_OF_INSERTED_OBJECTS = 3
 
 # Database Connection
 @pytest_asyncio.fixture

@@ -2,7 +2,7 @@ from typing import Any, Mapping
 
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.schemas.strava import RefreshTokenResponse, TokenExchangeResponse
-from tests.conftest import (
+from tests.constants import (
     CHALLENGE_FAILING_DISTANCE,
     CHALLENGE_PASSING_ACTIVITY_ID,
     CHALLENGE_PASSING_DISTANCE,

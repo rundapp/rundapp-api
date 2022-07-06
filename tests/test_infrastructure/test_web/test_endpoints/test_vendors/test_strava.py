@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from app.usecases.schemas.challenges import ChallengeJoinPayment
 from app.usecases.schemas.strava import StravaAccessInDb, WebhookVerificationResponse
 from app.usecases.schemas.users import UserInDb
-from tests.conftest import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID
+from tests.constants import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID
 
 
 @pytest_asyncio.fixture
