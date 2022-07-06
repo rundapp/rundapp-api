@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, constr
 
 class ChallengeBase(BaseModel):
     """A base challenge object."""
+
     bounty: int = Field(
         ...,
         description="The amount in WEI the challengee receives upon challenge completion.",
@@ -25,6 +26,7 @@ class ChallengeBase(BaseModel):
 
 class CreateChallengeRepoAdapter(ChallengeBase):
     """Model used to save new challenge in database."""
+
     challenger: int = Field(
         ...,
         description="A foreign key user ID that represents the person that issued the challenge.",
@@ -35,7 +37,6 @@ class CreateChallengeRepoAdapter(ChallengeBase):
         description="A foreign key user ID that represents the person that was challenged.",
         example=34567,
     )
-
 
 
 class ChallengeInDb(CreateChallengeRepoAdapter):

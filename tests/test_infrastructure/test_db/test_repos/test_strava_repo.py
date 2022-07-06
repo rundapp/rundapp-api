@@ -1,17 +1,12 @@
 import pytest
 
-
 from app.usecases.interfaces.repos.strava import IStravaRepo
 from app.usecases.schemas.strava import CreateStravaAccessAdapter, StravaAccessInDb
 
 
-
-
-
 @pytest.mark.asyncio
 async def test_upsert(
-    strava_repo: IStravaRepo,
-    create_strava_access_adapter: CreateStravaAccessAdapter
+    strava_repo: IStravaRepo, create_strava_access_adapter: CreateStravaAccessAdapter
 ) -> None:
 
     # Test Create
@@ -35,20 +30,23 @@ async def test_upsert(
     )
 
     assert isinstance(udpated_test_strava_access_object, StravaAccessInDb)
-    assert test_strava_access_object.athlete_id == udpated_test_strava_access_object.athlete_id
+    assert (
+        test_strava_access_object.athlete_id
+        == udpated_test_strava_access_object.athlete_id
+    )
     for key, value in udpated_test_strava_access_object.dict().items():
         if key not in ("created_at", "updated_at"):
             assert value == updated_create_strava_access_adapter[key]
-    
 
 
 @pytest.mark.asyncio
 async def test_retrieve(
-    strava_repo: IStravaRepo,
-    inserted_strava_access_object: StravaAccessInDb
+    strava_repo: IStravaRepo, inserted_strava_access_object: StravaAccessInDb
 ) -> None:
 
-    test_strava_access_object = await strava_repo.retrieve(athlete_id=inserted_strava_access_object)
+    test_strava_access_object = await strava_repo.retrieve(
+        athlete_id=inserted_strava_access_object
+    )
 
     assert isinstance(test_strava_access_object, StravaAccessInDb)
     for key, value in test_strava_access_object.dict().items():
@@ -57,14 +55,13 @@ async def test_retrieve(
 
 @pytest.mark.asyncio
 async def test_update(
-    strava_repo: IStravaRepo,
-    inserted_strava_access_object: StravaAccessInDb
+    strava_repo: IStravaRepo, inserted_strava_access_object: StravaAccessInDb
 ) -> None:
 
-    updated_test_strava_access_object = await strava_repo.update(athlete_id=inserted_strava_access_object.athlete_id, updated_access=StravaAccessUpdateAdapter(scope=[]))
+    updated_test_strava_access_object = await strava_repo.update(
+        athlete_id=inserted_strava_access_object.athlete_id,
+        updated_access=StravaAccessUpdateAdapter(scope=[]),
+    )
 
     assert isinstance(updated_test_strava_access_object, StravaAccessInDb)
     assert updated_test_strava_access_object.scope == []
-
-
-

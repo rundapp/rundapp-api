@@ -8,7 +8,6 @@ from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
-
 sys.path[0] = str(pathlib.Path(__file__).parents[1].resolve())
 load_dotenv()
 
@@ -17,7 +16,6 @@ from app.infrastructure.db.metadata import METADATA
 from app.infrastructure.db.models.challenges import CHALLENGES, PAYMENTS
 from app.infrastructure.db.models.strava import STRAVA_ACCESS
 from app.infrastructure.db.models.users import USERS
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

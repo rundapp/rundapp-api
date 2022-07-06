@@ -5,9 +5,11 @@ import pytest_asyncio
 from databases import Database
 
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
-from app.usecases.schemas.challenges import BountyVerification, ChallengeJoinPaymentAndUsers, IssueChallengeBody
-
-
+from app.usecases.schemas.challenges import (
+    BountyVerification,
+    ChallengeJoinPaymentAndUsers,
+    IssueChallengeBody,
+)
 
 
 @pytest_asyncio.fixture
@@ -19,21 +21,22 @@ async def issue_challenge_body() -> IssueChallengeBody:
         "challenger_address": "0x63958fDFA9DAF21bb9bE4312c3f53cb080DA80D8",
         "bounty": 1000000000000,
         "distance": 10.0,
-        "pace": 480
+        "pace": 480,
     }
 
     return IssueChallengeBody(**test_json)
-
 
 
 @pytest.mark.asyncio
 async def test_handle_challenge_issuance(
     challenge_manager_service: IChallengeManager,
     issue_challenge_body: IssueChallengeBody,
-    test_db: Database
+    test_db: Database,
 ) -> None:
 
-    await challenge_manager_service.handle_challenge_issuance(payload=issue_challenge_body)
+    await challenge_manager_service.handle_challenge_issuance(
+        payload=issue_challenge_body
+    )
 
     test_challenge = await test_db.fetch_one(
         "SELECT * FROM challenges INNER JOIN users ON challenges.challenger = users.id WHERE users.email = email=:email",
@@ -43,7 +46,7 @@ async def test_handle_challenge_issuance(
     )
 
     assert test_challenge
-    #TODO: test explicit values once converstion is decided upon 
+    # TODO: test explicit values once converstion is decided upon
 
 
 @pytest.mark.asyncio
@@ -52,7 +55,9 @@ async def test_claim_bounty(
     inserted_challenge_object: ChallengeJoinPaymentAndUsers,
 ) -> None:
 
-    verified_bounties = await challenge_manager_service.claim_bounty(address=inserted_challenge_object.address)
+    verified_bounties = await challenge_manager_service.claim_bounty(
+        address=inserted_challenge_object.address
+    )
 
     assert isinstance(verified_bounties, List[BountyVerification])
     assert verified_bounties[0].challenge_id == inserted_challenge_object.id

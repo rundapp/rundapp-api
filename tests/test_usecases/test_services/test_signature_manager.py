@@ -1,12 +1,11 @@
 import os
 
-from web3.auto import w3
 import pytest
+from web3.auto import w3
 
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
 from app.usecases.schemas.ethereum import SignedMessage
-
 
 
 @pytest.mark.asyncio
@@ -16,9 +15,13 @@ async def test_sign(
 ) -> None:
 
     # 1. Call function
-    signed_message = await signature_manager_service.sign(challenge_id=inserted_challenge_object.id)
-    signer_address = w3.eth.account.recoverHash(signed_message.message_hash, signature=signed_message.signature)
-    confirmed_signer_address=os.getenv("SIGNER_ADDRESS")
+    signed_message = await signature_manager_service.sign(
+        challenge_id=inserted_challenge_object.id
+    )
+    signer_address = w3.eth.account.recoverHash(
+        signed_message.message_hash, signature=signed_message.signature
+    )
+    confirmed_signer_address = os.getenv("SIGNER_ADDRESS")
 
     # Assertions
     assert isinstance(signed_message, SignedMessage)

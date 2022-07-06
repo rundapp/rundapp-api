@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-formatted_code := app/ migrations/ tests/
+formatted_code := app/ migrations/ tests/ tasks.py
 rev_id = ""
 migration_message = ""
 

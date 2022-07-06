@@ -7,8 +7,8 @@ from app.usecases.interfaces.services.email_manager import IEmailManager
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
     BountyVerification,
-    CreateChallengeRepoAdapter,
     ChallengeJoinPayment,
+    CreateChallengeRepoAdapter,
     IssueChallengeBody,
     RetrieveChallengesAdapter,
 )

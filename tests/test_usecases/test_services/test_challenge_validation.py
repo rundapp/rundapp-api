@@ -2,31 +2,27 @@ from typing import List
 
 import pytest
 import pytest_asyncio
-from app.usecases.interfaces.repos.challenges import IChallengesRepo
 
+from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.services.challange_validation import IChallengeValidation
 from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
 from app.usecases.schemas.strava import WebhookEvent
 from tests.conftest import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID
 
 
-
-
-
 @pytest_asyncio.fixture
 async def test_webhook_activity() -> WebhookEvent:
     test_webhook_json = {
-        "aspect_type": 'create',
+        "aspect_type": "create",
         "event_time": 1655410924,
         "object_id": None,
-        "object_type": 'activity',
+        "object_type": "activity",
         "owner_id": 77602383,
         "subscription_id": 218213,
-        "updates": {}
+        "updates": {},
     }
 
     return WebhookEvent(**test_webhook_json)
-
 
 
 @pytest.mark.asyncio
@@ -34,7 +30,7 @@ async def test_validate_pass(
     challenge_validation_service: IChallengeValidation,
     inserted_challenge_object: ChallengeJoinPaymentAndUsers,
     test_webhook_activity: WebhookEvent,
-    challenges_repo: IChallengesRepo
+    challenges_repo: IChallengesRepo,
 ) -> None:
     """Test Case 1: Passed challenge."""
 
@@ -47,14 +43,14 @@ async def test_validate_pass(
     test_challenge = await challenges_repo.retrieve(id=inserted_challenge_object.id)
 
     assert test_challenge.complete
-    
+
 
 @pytest.mark.asyncio
 async def test_validate_fail(
     challenge_validation_service: IChallengeValidation,
     inserted_challenge_object: ChallengeJoinPaymentAndUsers,
     test_webhook_activity: WebhookEvent,
-    challenges_repo: IChallengesRepo
+    challenges_repo: IChallengesRepo,
 ) -> None:
     """Test Case 2: Failed challenge."""
 
@@ -67,8 +63,3 @@ async def test_validate_fail(
     test_challenge = await challenges_repo.retrieve(id=inserted_challenge_object.id)
 
     assert not test_challenge.complete
-    
-
-    
-
-

@@ -80,7 +80,9 @@ class StravaRepo(IStravaRepo):
             if value is not None:
                 updated_access_dict[key] = value
 
-        update_statement = query_prefix.values(updated_access_dict).where(STRAVA_ACCESS.c.athlete_id == athlete_id)
+        update_statement = query_prefix.values(updated_access_dict).where(
+            STRAVA_ACCESS.c.athlete_id == athlete_id
+        )
 
         await self.db.execute(update_statement)
 

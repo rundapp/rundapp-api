@@ -16,9 +16,7 @@ class UsersRepo(IUsersRepo):
         """Inserts and returns new user object."""
 
         insert_statement = USERS.insert().values(
-            email=new_user.email,
-            address=new_user.address,
-            name=new_user.name
+            email=new_user.email, address=new_user.address, name=new_user.name
         )
 
         id = await self.db.execute(insert_statement)

@@ -1,8 +1,5 @@
-
-
 import pytest
 import pytest_asyncio
-
 
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.schemas.users import UserBase, UserInDb
@@ -13,19 +10,14 @@ def user_base_object() -> UserBase:
     return UserBase(
         email="test@example.com",
         address="0xb794f5ea0ba39494ce839613fffba74279579268",
-        name="Bob"
+        name="Bob",
     )
 
 
 @pytest.mark.asyncio
-async def test_create(
-    user_repo: IUsersRepo,
-    user_base_object: UserBase
-) -> None:
+async def test_create(user_repo: IUsersRepo, user_base_object: UserBase) -> None:
 
-    test_user = await user_repo.create(
-        new_user=user_base_object
-    )
+    test_user = await user_repo.create(new_user=user_base_object)
 
     assert isinstance(test_user, UserInDb)
     assert test_user.email == user_base_object.email
@@ -34,10 +26,7 @@ async def test_create(
 
 
 @pytest.mark.asyncio
-async def test_retrieve(
-    user_repo: IUsersRepo,
-    inserted_user_object: UserInDb
-) -> None:
+async def test_retrieve(user_repo: IUsersRepo, inserted_user_object: UserInDb) -> None:
 
     test_user = await user_repo.retrieve(id=inserted_user_object.id)
 
@@ -48,14 +37,13 @@ async def test_retrieve(
 
 
 @pytest.mark.asyncio
-async def test_update(
-    user_repo: IUsersRepo,
-    inserted_user_object: UserInDb
-) -> None:
+async def test_update(user_repo: IUsersRepo, inserted_user_object: UserInDb) -> None:
 
     updated_address = "0x9E81eC9222C4F5F4B5f5C442033C94111C281657"
 
-    test_user = await user_repo.update(id=inserted_user_object.id, address=updated_address)
+    test_user = await user_repo.update(
+        id=inserted_user_object.id, address=updated_address
+    )
 
     assert isinstance(test_user, UserInDb)
     assert test_user.address == updated_address

@@ -1,16 +1,19 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import List, Optional
+
 from app.usecases.schemas.challenges import (
-    CreateChallengeRepoAdapter,
-    ChallengeJoinPaymentAndUsers,
     ChallengeJoinPayment,
-    RetrieveChallengesAdapter
+    ChallengeJoinPaymentAndUsers,
+    CreateChallengeRepoAdapter,
+    RetrieveChallengesAdapter,
 )
 
 
 class IChallengesRepo(ABC):
     @abstractmethod
-    async def create(self, new_challenge: CreateChallengeRepoAdapter) -> ChallengeJoinPaymentAndUsers:
+    async def create(
+        self, new_challenge: CreateChallengeRepoAdapter
+    ) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
     @abstractmethod

@@ -79,7 +79,7 @@ class ChallengeValidation(IChallengeValidation):
                     access_token=new_access.access_token,
                     refresh_token=new_access.refresh_token,
                     expires_at=new_access.expires_at,
-                )
+                ),
             )
 
         return current_access

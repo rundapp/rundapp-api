@@ -7,9 +7,9 @@ from app.infrastructure.db.models.challenges import CHALLENGES, PAYMENTS
 from app.infrastructure.db.models.users import USERS
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.schemas.challenges import (
-    CreateChallengeRepoAdapter,
     ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
+    CreateChallengeRepoAdapter,
     RetrieveChallengesAdapter,
 )
 
@@ -18,7 +18,9 @@ class ChallengesRepo(IChallengesRepo):
     def __init__(self, db: Database):
         self.db = db
 
-    async def create(self, new_challenge: CreateChallengeRepoAdapter) -> ChallengeJoinPaymentAndUsers:
+    async def create(
+        self, new_challenge: CreateChallengeRepoAdapter
+    ) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
         insert_statement = CHALLENGES.insert().values(
