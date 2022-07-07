@@ -39,7 +39,7 @@ async def test_handle_challenge_issuance(
     )
 
     test_challenge = await test_db.fetch_one(
-        "SELECT * FROM challenges INNER JOIN users ON challenges.challenger = users.id WHERE users.email = email=:email",
+        "SELECT * FROM challenges INNER JOIN users ON challenges.challenger = users.id WHERE users.email=:email",
         {
             "email": issue_challenge_body.challenger_email,
         },
@@ -53,11 +53,20 @@ async def test_handle_challenge_issuance(
 async def test_claim_bounty(
     challenge_manager_service: IChallengeManager,
     inserted_challenge_object: ChallengeJoinPaymentAndUsers,
+    test_db: Database
 ) -> None:
+
+    await test_db.execute(
+        "UPDATE challenges SET complete = True WHERE id=:id",
+        {
+            "id": inserted_challenge_object.id,
+        },
+    )
 
     verified_bounties = await challenge_manager_service.claim_bounty(
         address=inserted_challenge_object.address
     )
 
-    assert isinstance(verified_bounties, List[BountyVerification])
+    for bounty in verified_bounties:
+        assert isinstance(bounty, BountyVerification)
     assert verified_bounties[0].challenge_id == inserted_challenge_object.id

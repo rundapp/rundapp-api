@@ -59,6 +59,6 @@ class UsersRepo(IUsersRepo):
             USERS.update().values(address=address).where(USERS.c.id == id)
         )
 
-        id = await self.db.execute(update_statement)
+        await self.db.execute(update_statement)
 
         return await self.retrieve(id=id)

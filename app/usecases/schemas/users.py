@@ -31,7 +31,7 @@ class UserInDb(UserBase):
         description="This application's unique identifier for a user.",
         example=23456,
     )
-    create_at: datetime = Field(
+    created_at: datetime = Field(
         ...,
         description="The time that a user object was created.",
         example="2022-06-17 17:47:44.190912",

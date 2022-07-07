@@ -9,7 +9,7 @@ from app.usecases.schemas.challenges import (
     CreateChallengeRepoAdapter,
     RetrieveChallengesAdapter,
 )
-from tests.conftest import DEFAULT_NUMBER_OF_INSERTED_OBJECTS
+from tests.constants import DEFAULT_NUMBER_OF_INSERTED_OBJECTS
 
 
 @pytest.mark.asyncio
@@ -53,7 +53,8 @@ async def test_retrieve_many(
         query_params=RetrieveChallengesAdapter(challenge_complete=False)
     )
 
-    assert isinstance(test_challenges, List[ChallengeJoinPaymentAndUsers])
+    for challenge in test_challenges:
+        assert isinstance(challenge, ChallengeJoinPaymentAndUsers)
     assert len(test_challenges) == DEFAULT_NUMBER_OF_INSERTED_OBJECTS
 
 

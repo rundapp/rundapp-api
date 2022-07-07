@@ -3,6 +3,7 @@ from os import path
 from pydantic import BaseSettings
 
 DOTENV_FILE = ".env" if path.isfile(".env") else None
+# TEST_DOTENV_FILE = "tests.env" if path.isfile("tests.env") else None
 
 
 class Settings(BaseSettings):
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
 
     # Application Settings
     application_name: str = "rundapp"
-    environment: str = "development"
+    environment: str
     log_level: str = "info"
     server_host: str = "0.0.0.0"
     server_port: int

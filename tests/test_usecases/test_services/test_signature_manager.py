@@ -19,7 +19,7 @@ async def test_sign(
         challenge_id=inserted_challenge_object.id
     )
     signer_address = w3.eth.account.recoverHash(
-        signed_message.message_hash, signature=signed_message.signature
+        signed_message.hashed_message, signature=signed_message.signature
     )
     confirmed_signer_address = os.getenv("SIGNER_ADDRESS")
 

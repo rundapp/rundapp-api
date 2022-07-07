@@ -2,6 +2,7 @@ from typing import Optional
 
 from databases import Database
 from sqlalchemy import and_
+from sqlalchemy.dialects.postgresql import insert
 
 from app.infrastructure.db.models.strava import STRAVA_ACCESS
 from app.usecases.interfaces.repos.strava import IStravaRepo
@@ -19,7 +20,7 @@ class StravaRepo(IStravaRepo):
     async def upsert(self, new_access: CreateStravaAccessAdapter) -> StravaAccessInDb:
         """Inserts or updates a Strava access object."""
 
-        insert_statment = STRAVA_ACCESS.insert().values(
+        insert_statment = insert(STRAVA_ACCESS).values(
             athlete_id=new_access.athlete_id,
             user_id=new_access.user_id,
             access_token=new_access.access_token,
@@ -40,9 +41,9 @@ class StravaRepo(IStravaRepo):
             ),
         )
 
-        athlete_id = await self.db.execute(upsert_statment)
+        await self.db.execute(upsert_statment)
 
-        return await self.retrieve(athlete_id == athlete_id)
+        return await self.retrieve(athlete_id=new_access.athlete_id)
 
     async def retrieve(
         self, athlete_id: Optional[int] = None, user_id: Optional[int] = None
@@ -65,6 +66,7 @@ class StravaRepo(IStravaRepo):
         query = STRAVA_ACCESS.select().where(and_(*query_conditions))
 
         result = await self.db.fetch_one(query)
+
         return StravaAccessInDb(**result) if result else None
 
     async def update(

@@ -26,10 +26,10 @@ class WebhookEvent(BaseModel):
     object_type: str
     object_id: int
     aspect_type: str
-    updates: Mapping[str, Any]
     owner_id: int
     subscription_id: int
     event_time: int
+    updates: Mapping[str, Any]
 
 
 ####### Response Models #######
@@ -66,20 +66,20 @@ class StravaAccessUpdateAdapter(BaseModel):
     to create a new strava access object."""
 
     access_token: Optional[str] = Field(
-        ...,
+        None,
         description="The access token neccessary to act on a Strava user's behalf.",
         example="d9d14255fa18a289610f34c33a703ec77a0ffd26",
     )
     refresh_token: Optional[str] = Field(
-        ...,
+        None,
         description="The token used to obtain a new access token.",
         example="a9d14265fa18a289610f34c33a703ec77a0fgd29",
     )
     expires_at: Optional[int] = Field(
-        ..., description="The time elapsed in seconds since epoch.", example=1655511405
+        None, description="The time elapsed in seconds since epoch.", example=1655511405
     )
     scope: Optional[List[str]] = Field(
-        ...,
+        None,
         description="The permissions this app has, granted by the Strava user.",
         example=["activity:read_all", "read_all"],
     )
@@ -122,7 +122,7 @@ class CreateStravaAccessAdapter(BaseModel):
 class StravaAccessInDb(CreateStravaAccessAdapter):
     """Database Model."""
 
-    create_at: datetime = Field(
+    created_at: datetime = Field(
         ...,
         description="The time that the Strava access object was created.",
         example="2022-06-17 17:47:44.190912",

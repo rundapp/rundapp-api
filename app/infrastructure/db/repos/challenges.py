@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import uuid4
 
 from databases import Database
 from sqlalchemy import and_, select
@@ -23,27 +24,29 @@ class ChallengesRepo(IChallengesRepo):
     ) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
+        challenge_id = str(uuid4())
+
         insert_statement = CHALLENGES.insert().values(
+            id=challenge_id,
             challenger=new_challenge.challenger,
             challengee=new_challenge.challengee,
-            reweard=new_challenge.bounty,
+            bounty=new_challenge.bounty,
             distance=new_challenge.distance,
             pace=new_challenge.pace,
-            # complete=Flase, do we need this?
+            complete=False,
         )
 
         async with self.db.transaction():
 
-            id = await self.db.execute(insert_statement)
+            await self.db.execute(insert_statement)
 
             insert_statement = PAYMENTS.insert().values(
-                challenge_id=id,
-                # complete=False, do we need this?
+                challenge_id=challenge_id, complete=False
             )
 
             await self.db.execute(insert_statement)
 
-        return await self.retrieve(id=id)
+        return await self.retrieve(id=challenge_id)
 
     async def retrieve(
         self,
@@ -92,12 +95,12 @@ class ChallengesRepo(IChallengesRepo):
         if query_params.challenger_address:
             query_conditions.append(USERS.c.address == query_params.challenger_address)
 
-        if query_params.challenge_complete:
+        if query_params.challenge_complete is not None:
             query_conditions.append(
                 CHALLENGES.c.complete == query_params.challenge_complete
             )
 
-        if query_params.payment_complete:
+        if query_params.payment_complete is not None:
             query_conditions.append(
                 PAYMENTS.c.complete == query_params.payment_complete
             )
@@ -131,14 +134,14 @@ class ChallengesRepo(IChallengesRepo):
             CHALLENGES.update().values(complete=True).where(CHALLENGES.c.id == id)
         )
 
-        id = await self.db.execute(update_statement)
+        await self.db.execute(update_statement)
         return await self.retrieve(id=id)
 
     async def update_payment(self, id: int) -> None:
         """Marks a payment as complete."""
 
         update_statement = (
-            PAYMENTS.update().values(complete=True).where(PAYMENTS.c.id == id)
+            PAYMENTS.update().values(complete=True).where(PAYMENTS.c.challenge_id == id)
         )
 
         await self.db.execute(update_statement)

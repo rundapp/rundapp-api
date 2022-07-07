@@ -39,7 +39,7 @@ async def receive_webhook(
         # The event is a newly submitted activity, so validate it against a challenge
         await challenge_validation_service.validate(event=body)
 
-    elif body.aspect_type == "update" and body.updates.get("authorized") == False:
+    elif body.aspect_type == "update" and body.updates.get("authorized") == "false":
         # The user revoked access to this application
         await strava_repo.update(
             athlete_id=body.owner_id, updated_access=StravaAccessUpdateAdapter(scope=[])

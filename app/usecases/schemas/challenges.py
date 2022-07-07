@@ -17,7 +17,7 @@ class ChallengeBase(BaseModel):
         description="The distance in miles the challengee must run to complete the challenge.",
         example=10000.00,
     )
-    pace: Optional[int] = Field(
+    pace: Optional[float] = Field(
         None,
         description="The average time (seconds) per mile of the specified distance the challenge must acheive during the run.",
         example=500,
@@ -86,8 +86,8 @@ class RetrieveChallengesAdapter(BaseModel):
 
     challengee_user_id: Optional[int]
     challenger_user_id: Optional[int]
-    challengee_address: Optional[int]
-    challenger_address: Optional[int]
+    challengee_address: Optional[str]
+    challenger_address: Optional[str]
     challenge_complete: Optional[bool]
     payment_complete: Optional[bool]
 

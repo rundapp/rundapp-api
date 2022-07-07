@@ -1,4 +1,5 @@
 import time
+from dateutil import parser
 
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
@@ -47,16 +48,15 @@ class ChallengeValidation(IChallengeValidation):
 
         # 4. Check for completeness. If complete, mark challenge as complete in database.
         for challenge in open_challenges:
-
             challenge_requirements = (
                 activity.get("map").get("polyline"),
                 activity.get("manual") == False,
                 activity.get("distance") >= challenge.distance,
                 activity.get("average_speed") >= challenge.pace,
                 activity.get("type") == "Run",
-                activity.get("start_date") > challenge.created_at,
+                parser.parse(activity.get("start_date")).timestamp() > challenge.created_at.timestamp(),
             )
-
+            
             if all(challenge_requirements):
                 await self.challenges_repo.update_challenge(id=challenge.id)
 

@@ -1,7 +1,11 @@
 import pytest
 
 from app.usecases.interfaces.repos.strava import IStravaRepo
-from app.usecases.schemas.strava import CreateStravaAccessAdapter, StravaAccessInDb
+from app.usecases.schemas.strava import (
+    CreateStravaAccessAdapter,
+    StravaAccessInDb,
+    StravaAccessUpdateAdapter,
+)
 
 
 @pytest.mark.asyncio
@@ -17,7 +21,7 @@ async def test_upsert(
     assert isinstance(test_strava_access_object, StravaAccessInDb)
     for key, value in test_strava_access_object.dict().items():
         if key not in ("created_at", "updated_at"):
-            assert value == create_strava_access_adapter[key]
+            assert value == create_strava_access_adapter.dict()[key]
 
     # Test Update
     updated_create_strava_access_adapter = create_strava_access_adapter.copy()
@@ -36,7 +40,7 @@ async def test_upsert(
     )
     for key, value in udpated_test_strava_access_object.dict().items():
         if key not in ("created_at", "updated_at"):
-            assert value == updated_create_strava_access_adapter[key]
+            assert value == updated_create_strava_access_adapter.dict()[key]
 
 
 @pytest.mark.asyncio
@@ -45,12 +49,12 @@ async def test_retrieve(
 ) -> None:
 
     test_strava_access_object = await strava_repo.retrieve(
-        athlete_id=inserted_strava_access_object
+        athlete_id=inserted_strava_access_object.athlete_id
     )
 
     assert isinstance(test_strava_access_object, StravaAccessInDb)
     for key, value in test_strava_access_object.dict().items():
-        assert value == inserted_strava_access_object[key]
+        assert value == inserted_strava_access_object.dict()[key]
 
 
 @pytest.mark.asyncio

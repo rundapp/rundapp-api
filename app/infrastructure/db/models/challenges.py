@@ -18,9 +18,9 @@ CHALLENGES = sa.Table(
         sa.ForeignKey("users.id"),
         index=True,
     ),
-    sa.Column("bounty", sa.Integer, nullable=False),
+    sa.Column("bounty", sa.BigInteger, nullable=False),
     sa.Column("distance", sa.Float, nullable=False),
-    sa.Column("pace", sa.Integer, nullable=True),
+    sa.Column("pace", sa.Float, nullable=True),
     sa.Column("complete", sa.Boolean, nullable=False, default=False),
     sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     sa.Column(

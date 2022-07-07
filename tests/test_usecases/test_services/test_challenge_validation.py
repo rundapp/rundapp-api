@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import pytest
 import pytest_asyncio
@@ -6,8 +6,8 @@ import pytest_asyncio
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.services.challange_validation import IChallengeValidation
 from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
-from app.usecases.schemas.strava import WebhookEvent
-from tests.conftest import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID
+from app.usecases.schemas.strava import StravaAccessInDb, WebhookEvent
+from tests.constants import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID, TEST_ATHLETE_ID
 
 
 @pytest_asyncio.fixture
@@ -15,9 +15,9 @@ async def test_webhook_activity() -> WebhookEvent:
     test_webhook_json = {
         "aspect_type": "create",
         "event_time": 1655410924,
-        "object_id": None,
+        "object_id": 1,
         "object_type": "activity",
-        "owner_id": 77602383,
+        "owner_id": TEST_ATHLETE_ID,
         "subscription_id": 218213,
         "updates": {},
     }
@@ -28,7 +28,7 @@ async def test_webhook_activity() -> WebhookEvent:
 @pytest.mark.asyncio
 async def test_validate_pass(
     challenge_validation_service: IChallengeValidation,
-    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
+    linked_strava_access_and_challenge: Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers],
     test_webhook_activity: WebhookEvent,
     challenges_repo: IChallengesRepo,
 ) -> None:
@@ -40,7 +40,7 @@ async def test_validate_pass(
     await challenge_validation_service.validate(event=test_webhook_activity)
 
     # 2. Given that the challenge was passed, verify that the challenge was updated to complete
-    test_challenge = await challenges_repo.retrieve(id=inserted_challenge_object.id)
+    test_challenge = await challenges_repo.retrieve(id=linked_strava_access_and_challenge[1].id)
 
     assert test_challenge.complete
 
@@ -48,7 +48,7 @@ async def test_validate_pass(
 @pytest.mark.asyncio
 async def test_validate_fail(
     challenge_validation_service: IChallengeValidation,
-    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
+    linked_strava_access_and_challenge: Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers],
     test_webhook_activity: WebhookEvent,
     challenges_repo: IChallengesRepo,
 ) -> None:
@@ -60,6 +60,6 @@ async def test_validate_fail(
     await challenge_validation_service.validate(event=test_webhook_activity)
 
     # 2. Given that the challenge was passed, verify that the challenge was updated to complete
-    test_challenge = await challenges_repo.retrieve(id=inserted_challenge_object.id)
+    test_challenge = await challenges_repo.retrieve(id=linked_strava_access_and_challenge[1].id)
 
     assert not test_challenge.complete

@@ -105,8 +105,8 @@ class ChallengeManager(IChallengeManager):
                 challengee_address=address, challenge_complete=True
             )
         )
-
-        # If there are multipe, needs to return a list of them
+        
+        # If there are multiple, needs to return a list of them
         bounty_verifications = []
         for challenge in completed_challenges:
             if not challenge.payment_complete:

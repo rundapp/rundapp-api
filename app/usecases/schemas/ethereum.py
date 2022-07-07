@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 class SignedMessage(BaseModel):
 
-    message_hash: str
+    hashed_message: str
     signature: str

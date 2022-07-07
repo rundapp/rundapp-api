@@ -1,14 +1,15 @@
-from typing import Any, Mapping
+import os
+from typing import Any, Mapping, Tuple
 
 import pytest
 import pytest_asyncio
 from databases import Database
 from httpx import AsyncClient
 
-from app.usecases.schemas.challenges import ChallengeJoinPayment
+from app.usecases.schemas.challenges import ChallengeJoinPayment, ChallengeJoinPaymentAndUsers
 from app.usecases.schemas.strava import StravaAccessInDb, WebhookVerificationResponse
 from app.usecases.schemas.users import UserInDb
-from tests.constants import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_PASSING_ACTIVITY_ID
+from tests.constants import CHALLENGE_FAILING_ACTIVITY_ID, CHALLENGE_FAILING_DISTANCE, CHALLENGE_PASSING_ACTIVITY_ID, TEST_ATHLETE_ID
 
 
 @pytest_asyncio.fixture
@@ -18,7 +19,7 @@ async def webhook_activity_event_json() -> Mapping[str, Any]:
         "event_time": 1655410924,
         "object_id": None,
         "object_type": "activity",
-        "owner_id": 77602383,
+        "owner_id": TEST_ATHLETE_ID,
         "subscription_id": 218213,
         "updates": {},
     }
@@ -31,7 +32,7 @@ async def webhook_athlete_event_json() -> Mapping[str, Any]:
         "event_time": 1655410924,
         "object_id": 104459479,
         "object_type": "athlete",
-        "owner_id": 77602383,
+        "owner_id": TEST_ATHLETE_ID,
         "subscription_id": 218213,
         "updates": {"authorized": "false"},
     }
@@ -42,23 +43,22 @@ async def test_receive_webhook_challenge_pass(
     test_client: AsyncClient,
     webhook_activity_event_json: Mapping[str, Any],
     test_db: Database,
-    inserted_challenge_object: ChallengeJoinPayment,
+    linked_strava_access_and_challenge: Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers],
 ) -> None:
     """Test Case 1: Challenge passed."""
 
     endpoint = "/vendors/strava/webhook"
 
     # NOTE: The Mocked Strava client conditionally returns distances based on activity ID.
-    webhook_activity_event_json["object_id"] == CHALLENGE_PASSING_ACTIVITY_ID
-    response = await test_client.post(endpoint, data=webhook_activity_event_json)
-
+    webhook_activity_event_json["object_id"] = CHALLENGE_PASSING_ACTIVITY_ID
+    response = await test_client.post(endpoint, json=webhook_activity_event_json)
+    
     test_challenge = await test_db.fetch_one(
         "SELECT * FROM challenges WHERE id=:id",
         {
-            "id": inserted_challenge_object.id,
+            "id": linked_strava_access_and_challenge[1].id,
         },
     )
-
     assert response.status_code == 200
     assert test_challenge["complete"]
 
@@ -68,24 +68,22 @@ async def test_receive_webhook_challenge_fail(
     test_client: AsyncClient,
     webhook_activity_event_json: Mapping[str, Any],
     test_db: Database,
-    inserted_challenge_object: ChallengeJoinPayment,
+    linked_strava_access_and_challenge: Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers],
 ) -> None:
     """Test Case 2: Challenge failed."""
 
     endpoint = "/vendors/strava/webhook"
 
     # NOTE: The Mocked Strava client conditionally returns distances based on activity ID.
-    webhook_activity_event_json["object_id"] == CHALLENGE_FAILING_ACTIVITY_ID
-    response = await test_client.post(endpoint, data=webhook_activity_event_json)
-
+    webhook_activity_event_json["object_id"] = CHALLENGE_FAILING_ACTIVITY_ID
+    response = await test_client.post(endpoint, json=webhook_activity_event_json)
+    
     test_challenge = await test_db.fetch_one(
         "SELECT * FROM challenges WHERE id=:id",
         {
-            "id": inserted_challenge_object.id,
+            "id": linked_strava_access_and_challenge[1].id,
         },
     )
-
-    # Assertions
     assert response.status_code == 200
     assert not test_challenge["complete"]
 
@@ -95,13 +93,13 @@ async def test_receive_webhook_revoked_access(
     test_client: AsyncClient,
     webhook_athlete_event_json: Mapping[str, Any],
     test_db: Database,
-    inserted_challenge_object: ChallengeJoinPayment,
+    linked_strava_access_and_challenge: Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers],
 ) -> None:
     """Test Case 3: User revoked access to his or her Strava account."""
 
     endpoint = "/vendors/strava/webhook"
 
-    response = await test_client.post(endpoint, data=webhook_athlete_event_json)
+    response = await test_client.post(endpoint, json=webhook_athlete_event_json)
 
     test_saved_strava_access_obj = await test_db.fetch_one(
         "SELECT * FROM strava_access WHERE athlete_id=:athlete_id",
@@ -120,8 +118,8 @@ async def test_validate_webhook_subscription(test_client: AsyncClient) -> None:
 
     endpoint = "/vendors/strava/webhook"
     params = {
-        "hub.mode": "something from strava",
-        "hub.verify_token": "something from strava",
+        "hub.mode": "subscribe",
+        "hub.verify_token": os.getenv("VERIFY_TOKEN"),
         "hub.challenge": "something from strava",
     }
 

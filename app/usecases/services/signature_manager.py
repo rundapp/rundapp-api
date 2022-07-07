@@ -19,6 +19,6 @@ class SignatureManager(ISignatureManager):
         )
 
         return SignedMessage(
-            message_hash=signed_message.messageHash.hex(),
+            hashed_message=signed_message.messageHash.hex(),
             signature=signed_message.signature.hex(),
         )

@@ -43,6 +43,7 @@ postgres_password = getenv("POSTGRES_PASSWORD", default="postgres")
 postgres_database = getenv("POSTGRES_DB", default="rundapp-dev")
 
 url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_database}"
+# NOTE: Uncomment the URL below and comment the URL above to run a test database migration
 # url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:5444/rundapp-dev-test"
 config.set_main_option("sqlalchemy.url", url)
 
