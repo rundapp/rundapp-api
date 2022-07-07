@@ -21,10 +21,10 @@ async def get_signature_manager_service() -> ISignatureManager:
     return SignatureManager()
 
 
-async def get_email_manager_service() -> IEmailManager:
+async def get_email_manager_service(strava_repo: IStravaRepo = Depends(get_strava_repo)) -> IEmailManager:
     """Instantiates and returns the Email Manger Service."""
 
-    return EmailManager()
+    return EmailManager(strava_repo=strava_repo)
 
 
 async def get_challenge_validation_service(
