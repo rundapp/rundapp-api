@@ -53,7 +53,7 @@ async def test_handle_challenge_issuance(
 async def test_claim_bounty(
     challenge_manager_service: IChallengeManager,
     inserted_challenge_object: ChallengeJoinPaymentAndUsers,
-    test_db: Database
+    test_db: Database,
 ) -> None:
 
     await test_db.execute(

@@ -1,7 +1,13 @@
 from fastapi import Depends
 
-from app.dependencies import get_challenges_repo, get_strava_client, get_strava_repo
+from app.dependencies import (
+    get_challenges_repo,
+    get_ethereum_client,
+    get_strava_client,
+    get_strava_repo,
+)
 from app.dependencies.repos import get_users_repo
+from app.usecases.interfaces.clients.ethereum import IEthereumClient
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.strava import IStravaRepo
@@ -21,7 +27,9 @@ async def get_signature_manager_service() -> ISignatureManager:
     return SignatureManager()
 
 
-async def get_email_manager_service(strava_repo: IStravaRepo = Depends(get_strava_repo)) -> IEmailManager:
+async def get_email_manager_service(
+    strava_repo: IStravaRepo = Depends(get_strava_repo),
+) -> IEmailManager:
     """Instantiates and returns the Email Manger Service."""
 
     return EmailManager(strava_repo=strava_repo)
@@ -44,6 +52,7 @@ async def get_challenge_validation_service(
 
 
 async def get_challenge_manager_service(
+    ethereum_client: IEthereumClient = Depends(get_ethereum_client),
     users_repo: IUsersRepo = Depends(get_users_repo),
     challenges_repo: IChallengesRepo = Depends(get_challenges_repo),
     signature_manager: ISignatureManager = Depends(get_signature_manager_service),
@@ -52,6 +61,7 @@ async def get_challenge_manager_service(
     """Instantiates and returns the Challenge Manger Service."""
 
     return ChallengeManager(
+        ethereum_client=ethereum_client,
         challenges_repo=challenges_repo,
         users_repo=users_repo,
         signature_manager=signature_manager,

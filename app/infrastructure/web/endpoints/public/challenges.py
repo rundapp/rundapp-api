@@ -5,7 +5,11 @@ from app.dependencies import get_challenge_manager_service, get_users_repo
 from app.libraries.errors import ApplicationErrors
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
-from app.usecases.schemas.challenges import ClaimBountyResponse, IssueChallengeBody
+from app.usecases.schemas.challenges import (
+    ChallengeException,
+    ClaimBountyResponse,
+    IssueChallengeBody,
+)
 
 challenges_router = APIRouter(tags=["Challenges"])
 
@@ -23,7 +27,10 @@ async def issue_challenge(
 ) -> None:
     """Issues new challenge."""
 
-    await challenge_manager_service.handle_challenge_issuance(payload=body)
+    try:
+        await challenge_manager_service.handle_challenge_issuance(payload=body)
+    except ChallengeException as error:
+        raise await ApplicationErrors(detail=str(error)).invalid_resource_id()
 
 
 # @challenges_router.get(

@@ -29,6 +29,9 @@ class Settings(BaseSettings):
 
     # Ethereum Settings
     signer_private_key: str
+    abi: str
+    rpc_url: str
+    contract_address: str
 
     # Sendgrid Settings
     sendgrid_api_key: str

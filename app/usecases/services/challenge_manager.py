@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from app.usecases.interfaces.clients.ethereum import IEthereumClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
@@ -7,6 +8,7 @@ from app.usecases.interfaces.services.email_manager import IEmailManager
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
     BountyVerification,
+    ChallengeException,
     ChallengeJoinPayment,
     CreateChallengeRepoAdapter,
     IssueChallengeBody,
@@ -18,11 +20,13 @@ from app.usecases.schemas.users import Participants, UserBase
 class ChallengeManager(IChallengeManager):
     def __init__(
         self,
+        ethereum_client: IEthereumClient,
         users_repo: IUsersRepo,
         challenges_repo: IChallengesRepo,
         signature_manager: ISignatureManager,
         email_manager: IEmailManager,
     ):
+        self.ethereum_client = ethereum_client
         self.users_repo = users_repo
         self.challenges_repo = challenges_repo
         self.signature_manager = signature_manager
@@ -31,52 +35,77 @@ class ChallengeManager(IChallengeManager):
     async def handle_challenge_issuance(self, payload: IssueChallengeBody) -> None:
         """Handles a newly issued challenge."""
 
-        # 1. See if users already exist. If not, create them.
+        # 1. Ensure challenge is not already in database.
+        challenge = await self.challenges_repo.retrieve(id=payload.challenge_id)
+
+        if challenge:
+            raise ChallengeException("Invalid challenge_id.")
+
+        # 2. Retrive on-chain challenge.
+        onchain_challenge = self.ethereum_client.get_challenge(
+            challenge_id=payload.challenge_id
+        )
+
+        # 3. Ensure the challenge exists.
+        if not int(onchain_challenge.challengee, 0) or not int(
+            onchain_challenge.challenger, 0
+        ):
+            raise ChallengeException("On-chain challenge not found.")
+
+        # 4. See if users already exist. If not, create them.
         participants = await self.handle_users(
-            challenger_email=payload.challenger_email,
-            challenger_address=payload.challenger_address,
-            challengee_email=payload.challengee_email,
-            challengee_address=payload.challengee_address,
+            payload=payload,
+            challenger_address=onchain_challenge.challenger,
+            challengee_address=onchain_challenge.challengee,
         )
 
-        # 2. Create challenge.
+        # 5. Create challenge.
         issued_challenge = await self.__create_new_challenge(
+            challenge_id=payload.challenge_id,
             participants=participants,
-            bounty=payload.bounty,
-            distance=payload.distance,
-            pace=payload.pace,
+            bounty=onchain_challenge.bounty,
+            distance=onchain_challenge.distance,
+            pace=onchain_challenge.speed,
         )
 
-        # 3. Notify participants via email.
+        # 6. Notify participants via email.
         await self.email_manager.challenge_issuance_notification(
             participants=participants, challenge=issued_challenge
         )
 
     async def handle_users(
         self,
-        challenger_email: str,
+        payload: IssueChallengeBody,
         challenger_address: str,
-        challengee_email: str,
         challengee_address: Optional[str] = None,
     ) -> Participants:
         """Retrieves or creates users."""
 
-        challenger = await self.users_repo.retrieve(email=challenger_email)
+        challenger = await self.users_repo.retrieve(email=payload.challenger_email)
         if not challenger:
             challenger = await self.users_repo.create(
-                new_user=UserBase(email=challenger_email, address=challenger_address)
+                new_user=UserBase(
+                    email=payload.challenger_email,
+                    address=challenger_address,
+                    name=payload.challenger_name,
+                )
             )
 
-        challengee = await self.users_repo.retrieve(email=challengee_email)
+        challengee = await self.users_repo.retrieve(email=payload.challengee_email)
         if not challengee:
             challengee = await self.users_repo.create(
-                new_user=UserBase(email=challengee_email, address=challengee_address)
+                new_user=UserBase(
+                    email=payload.challengee_email,
+                    address=challengee_address,
+                    name=payload.challengee_name,
+                )
             )
 
         return Participants(challenger=challenger, challengee=challengee)
 
     async def __create_new_challenge(
         self,
+        challenge_id: str,
         participants: Participants,
         bounty: int,
         distance: float,
@@ -84,10 +113,9 @@ class ChallengeManager(IChallengeManager):
     ) -> ChallengeJoinPayment:
         """Creates challenge."""
 
-        # TODO: will likely have to convert to metric.
-
         return await self.challenges_repo.create(
             new_challenge=CreateChallengeRepoAdapter(
+                id=challenge_id,
                 challenger=participants.challenger.id,
                 challengee=participants.challengee.id,
                 bounty=bounty,
@@ -105,7 +133,7 @@ class ChallengeManager(IChallengeManager):
                 challengee_address=address, challenge_complete=True
             )
         )
-        
+
         # If there are multiple, needs to return a list of them
         bounty_verifications = []
         for challenge in completed_challenges:

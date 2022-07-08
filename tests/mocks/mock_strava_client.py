@@ -1,5 +1,5 @@
-from typing import Any, Mapping, Optional
 from datetime import date
+from typing import Any, Mapping, Optional
 
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.schemas.strava import RefreshTokenResponse, TokenExchangeResponse

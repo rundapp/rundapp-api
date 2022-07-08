@@ -1,14 +1,13 @@
 from typing import List, Optional
-from uuid import uuid4
 
 from databases import Database
 from sqlalchemy import and_, select
 
 from app.infrastructure.db.models.challenges import CHALLENGES, PAYMENTS
 from app.infrastructure.db.models.users import USERS
+from app.libraries.errors import ApplicationErrors
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.schemas.challenges import (
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
     CreateChallengeRepoAdapter,
     RetrieveChallengesAdapter,
@@ -24,10 +23,8 @@ class ChallengesRepo(IChallengesRepo):
     ) -> ChallengeJoinPaymentAndUsers:
         """Inserts and returns new challenge (and payment) object."""
 
-        challenge_id = str(uuid4())
-
         insert_statement = CHALLENGES.insert().values(
-            id=challenge_id,
+            id=new_challenge.id,
             challenger=new_challenge.challenger,
             challengee=new_challenge.challengee,
             bounty=new_challenge.bounty,
@@ -41,16 +38,16 @@ class ChallengesRepo(IChallengesRepo):
             await self.db.execute(insert_statement)
 
             insert_statement = PAYMENTS.insert().values(
-                challenge_id=challenge_id, complete=False
+                challenge_id=new_challenge.id, complete=False
             )
 
             await self.db.execute(insert_statement)
 
-        return await self.retrieve(id=challenge_id)
+        return await self.retrieve(id=new_challenge.id)
 
     async def retrieve(
         self,
-        id: int,
+        id: str,
     ) -> Optional[ChallengeJoinPaymentAndUsers]:
         """Retreives challenge object with payment information by id."""
 

@@ -3,6 +3,12 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, constr
 
+##### Exceptions #####
+
+
+class ChallengeException(Exception):
+    """General Challenge Exception."""
+
 
 class ChallengeBase(BaseModel):
     """A base challenge object."""
@@ -27,6 +33,11 @@ class ChallengeBase(BaseModel):
 class CreateChallengeRepoAdapter(ChallengeBase):
     """Model used to save new challenge in database."""
 
+    id: str = Field(
+        ...,
+        description="The unique identifier of the challege associated with the bounty.",
+        example="9ffb6aa3-d776-4ee6-9423-3013a8e5168f",
+    )
     challenger: int = Field(
         ...,
         description="A foreign key user ID that represents the person that issued the challenge.",
@@ -42,7 +53,6 @@ class CreateChallengeRepoAdapter(ChallengeBase):
 class ChallengeInDb(CreateChallengeRepoAdapter):
     """Database Model."""
 
-    id: str = Field(..., description="The challenge ID in database.", example=12345)
     complete: bool = Field(
         ...,
         description="Whether of not the challenge has been completed.",
@@ -112,10 +122,31 @@ class BountyVerification(BaseModel):
     )
 
 
+##### On-chain Response #####
+class ChallengeOnChain(BaseModel):
+    challenger: str
+    challengee: str
+    bounty: int
+    distance: int
+    speed: int
+    issuedAt: int
+    complete: bool
+
+
 ##### Request Models #####
-class IssueChallengeBody(ChallengeBase):
+class IssueChallengeBody(BaseModel):
     """JSON body sent when a challenge is issued."""
 
+    challenger_name: Optional[constr(max_length=100)] = Field(
+        None,
+        description="The name of the challenger.",
+        example="Bob",
+    )
+    challengee_name: Optional[constr(max_length=100)] = Field(
+        None,
+        description="The name of the challengee.",
+        example="Alice",
+    )
     challenger_email: constr(max_length=100) = Field(
         ...,
         description="The email addresss of the challenger.",
@@ -126,15 +157,10 @@ class IssueChallengeBody(ChallengeBase):
         description="The email addresss of the challengee.",
         example="challengee@example.com",
     )
-    challengee_address: Optional[constr(min_length=42, max_length=42)] = Field(
-        None,
-        description="The Ethereum addresss of the challengee.",
-        example="0xcF107AdC80c7F7b5eE430B52744F96e2D76681a2",
-    )
-    challenger_address: constr(min_length=42, max_length=42) = Field(
+    challenge_id: str = Field(
         ...,
-        description="The Ethereum addresss of the challenger.",
-        example="0x63958fDFA9DAF21bb9bE4312c3f53cb080DA80D8",
+        description="The unique identifier of the challege associated with the bounty.",
+        example="9ffb6aa3-d776-4ee6-9423-3013a8e5168f",
     )
 
 

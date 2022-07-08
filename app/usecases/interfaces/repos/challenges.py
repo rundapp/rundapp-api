@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from app.usecases.schemas.challenges import (
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
     CreateChallengeRepoAdapter,
     RetrieveChallengesAdapter,
@@ -19,7 +18,7 @@ class IChallengesRepo(ABC):
     @abstractmethod
     async def retrieve(
         self,
-        id: int,
+        id: str,
     ) -> Optional[ChallengeJoinPaymentAndUsers]:
         """Retreives a challenge with payment information."""
 

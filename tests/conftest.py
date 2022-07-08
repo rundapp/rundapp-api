@@ -41,7 +41,7 @@ from tests.constants import (
     CHALLENGEE_ADDRESS,
     CHALLENGER_ADDRESS,
     DEFAULT_NUMBER_OF_INSERTED_OBJECTS,
-    TEST_ATHLETE_ID
+    TEST_ATHLETE_ID,
 )
 from tests.mocks.mock_strava_client import MockStravaClient
 
@@ -202,18 +202,18 @@ async def linked_strava_access_and_challenge(
 ) -> Tuple[StravaAccessInDb, ChallengeJoinPaymentAndUsers]:
     """Inserts a user object into the database for other tests."""
 
-    strava_access = await strava_repo.upsert(new_access=CreateStravaAccessAdapter(
-        athlete_id=TEST_ATHLETE_ID,
-        user_id=inserted_challenge_object.challengee,
-        access_token="d9d14255fa18a289610f34c33a703ec77a0ffd26",
-        refresh_token="a9d14265fa18a289610f34c33a703ec77a0fgd29",
-        expires_at=1655511405,
-        scope=["activity:read_all", "read_all"],
-    ))
+    strava_access = await strava_repo.upsert(
+        new_access=CreateStravaAccessAdapter(
+            athlete_id=TEST_ATHLETE_ID,
+            user_id=inserted_challenge_object.challengee,
+            access_token="d9d14255fa18a289610f34c33a703ec77a0ffd26",
+            refresh_token="a9d14265fa18a289610f34c33a703ec77a0fgd29",
+            expires_at=1655511405,
+            scope=["activity:read_all", "read_all"],
+        )
+    )
 
     return (strava_access, inserted_challenge_object)
-
-
 
 
 @pytest_asyncio.fixture
@@ -225,7 +225,7 @@ async def create_challenge_repo_adapter(
         challengee=two_inserted_user_objects[1].id,
         bounty=1000,
         distance=8000.0,  # 8 kilometers
-        pace=2.5,         # meters / second
+        pace=2.5,  # meters / second
     )
 
 

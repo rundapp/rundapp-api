@@ -1,4 +1,5 @@
 import time
+
 from dateutil import parser
 
 from app.usecases.interfaces.clients.strava import IStravaClient
@@ -54,9 +55,10 @@ class ChallengeValidation(IChallengeValidation):
                 activity.get("distance") >= challenge.distance,
                 activity.get("average_speed") >= challenge.pace,
                 activity.get("type") == "Run",
-                parser.parse(activity.get("start_date")).timestamp() > challenge.created_at.timestamp(),
+                parser.parse(activity.get("start_date")).timestamp()
+                > challenge.created_at.timestamp(),
             )
-            
+
             if all(challenge_requirements):
                 await self.challenges_repo.update_challenge(id=challenge.id)
 

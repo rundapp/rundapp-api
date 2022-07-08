@@ -1,15 +1,23 @@
 from typing import Any, Mapping, Tuple
-from databases import Database
 
 import pytest
 import pytest_asyncio
+from databases import Database
 from httpx import AsyncClient
 
 from app.usecases.interfaces.services.challange_validation import IChallengeValidation
-from app.usecases.schemas.challenges import ChallengeJoinPayment, ChallengeJoinPaymentAndUsers, ClaimBountyResponse
+from app.usecases.schemas.challenges import (
+    ChallengeJoinPayment,
+    ChallengeJoinPaymentAndUsers,
+    ClaimBountyResponse,
+)
 from app.usecases.schemas.strava import StravaAccessInDb, WebhookEvent
-from tests.constants import CHALLENGEE_ADDRESS, CHALLENGE_PASSING_ACTIVITY_ID, CHALLENGE_FAILING_ACTIVITY_ID, TEST_ATHLETE_ID
-
+from tests.constants import (
+    CHALLENGE_FAILING_ACTIVITY_ID,
+    CHALLENGE_PASSING_ACTIVITY_ID,
+    CHALLENGEE_ADDRESS,
+    TEST_ATHLETE_ID,
+)
 
 
 @pytest_asyncio.fixture
@@ -25,6 +33,7 @@ async def test_webhook_activity() -> WebhookEvent:
     }
 
     return WebhookEvent(**test_webhook_json)
+
 
 @pytest_asyncio.fixture
 async def issue_challenge_request_json() -> Mapping[str, Any]:
@@ -108,7 +117,10 @@ async def test_claim_challenge_bounty(
     # Assertions
     assert response.status_code == 200
     assert ClaimBountyResponse(**response_data)
-    assert inserted_challenge_object.id == response_data["verified_bounties"][0]["challenge_id"]
+    assert (
+        inserted_challenge_object.id
+        == response_data["verified_bounties"][0]["challenge_id"]
+    )
 
 
 @pytest.mark.asyncio
