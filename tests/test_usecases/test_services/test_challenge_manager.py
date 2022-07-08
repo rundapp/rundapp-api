@@ -1,4 +1,4 @@
-from typing import List
+import uuid
 
 import pytest
 import pytest_asyncio
@@ -15,13 +15,11 @@ from app.usecases.schemas.challenges import (
 @pytest_asyncio.fixture
 async def issue_challenge_body() -> IssueChallengeBody:
     test_json = {
+        "challenger_name": "Bob",
+        "challengee_name": "Alice",
         "challenger_email": "challenger@testservice.com",
         "challengee_email": "challengee@testservice.com",
-        "challengee_address": "0xcF107AdC80c7F7b5eE430B52744F96e2D76681a2",
-        "challenger_address": "0x63958fDFA9DAF21bb9bE4312c3f53cb080DA80D8",
-        "bounty": 1000000000000,
-        "distance": 10.0,
-        "pace": 480,
+        "challenge_id": str(uuid.uuid4())
     }
 
     return IssueChallengeBody(**test_json)

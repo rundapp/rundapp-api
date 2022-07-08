@@ -1,4 +1,5 @@
 import os
+import uuid
 from typing import List, Tuple
 
 import pytest_asyncio
@@ -20,6 +21,7 @@ from app.infrastructure.db.repos.strava import StravaRepo
 from app.infrastructure.db.repos.users import UsersRepo
 from app.infrastructure.web.setup import setup_app
 from app.usecases.interfaces.clients.strava import IStravaClient
+from app.usecases.interfaces.clients.ethereum import IEthereumClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.strava import IStravaRepo
 from app.usecases.interfaces.repos.users import IUsersRepo
@@ -44,7 +46,7 @@ from tests.constants import (
     TEST_ATHLETE_ID,
 )
 from tests.mocks.mock_strava_client import MockStravaClient
-
+from tests.mocks.mock_ethereum_client import MockEthereumClient
 
 # Database Connection
 @pytest_asyncio.fixture
@@ -93,6 +95,11 @@ async def strava_client() -> IStravaClient:
     return MockStravaClient()
 
 
+@pytest_asyncio.fixture
+async def ethereum_client() -> IEthereumClient:
+    return MockEthereumClient()
+
+
 # Services
 @pytest_asyncio.fixture
 async def signature_manager_service() -> ISignatureManager:
@@ -122,13 +129,16 @@ async def challenge_validation_service(
 
 @pytest_asyncio.fixture
 async def challenge_manager_service(
+    ethereum_client: IEthereumClient,
     users_repo: IUsersRepo,
     challenges_repo: IChallengesRepo,
     signature_manager_service: ISignatureManager,
     email_manager_service: IEmailManager,
 ) -> IChallengeManager:
     """ChallangerManager with test services and test repos."""
+    
     return ChallengeManager(
+        ethereum_client=ethereum_client,
         users_repo=users_repo,
         challenges_repo=challenges_repo,
         signature_manager=signature_manager_service,
@@ -221,6 +231,7 @@ async def create_challenge_repo_adapter(
     two_inserted_user_objects: List[UserInDb],
 ) -> CreateChallengeRepoAdapter:
     return CreateChallengeRepoAdapter(
+        id=str(uuid.uuid4()),
         challenger=two_inserted_user_objects[0].id,
         challengee=two_inserted_user_objects[1].id,
         bounty=1000,
@@ -248,6 +259,7 @@ async def many_inserted_challenge_objects(
 
     created_challenges = []
     for i, _ in enumerate(range(DEFAULT_NUMBER_OF_INSERTED_OBJECTS)):
+        create_challenge_repo_adapter.id = str(uuid.uuid4())
         created_challenges.append(
             await challenges_repo.create(new_challenge=create_challenge_repo_adapter)
         )

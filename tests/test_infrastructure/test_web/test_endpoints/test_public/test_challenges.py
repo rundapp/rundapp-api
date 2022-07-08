@@ -1,4 +1,5 @@
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping
+import uuid
 
 import pytest
 import pytest_asyncio
@@ -38,13 +39,11 @@ async def test_webhook_activity() -> WebhookEvent:
 @pytest_asyncio.fixture
 async def issue_challenge_request_json() -> Mapping[str, Any]:
     return {
+        "challenger_name": "Bob",
+        "challengee_name": "Alice",
         "challenger_email": "challenger@test.com",
         "challengee_email": "challengee@test.com",
-        "challengee_address": "0xcF107AdC80c7F7b5eE430B52744F96e2D76681a2",
-        "challenger_address": "0x63958fDFA9DAF21bb9bE4312c3f53cb080DA80D8",
-        "bounty": 1000000000000,
-        "distance": 10.0,
-        "pace": 480,
+        "challenge_id": str(uuid.uuid4())
     }
 
 
@@ -78,11 +77,11 @@ async def test_issue_challenge_invalid_request(
     response = await test_client.post(endpoint, json=email_too_long_request)
     assert response.status_code == 422
 
-    # FAIL: Address not 42 characters long
+    # FAIL: name too long
     address_too_long_request = issue_challenge_request_json.copy()
     address_too_long_request[
-        "challenger_address"
-    ] = "0xcF107AdC80c7F7b5eE430B52744F96e2D76681a276681a2"
+        "challenger_name"
+    ] = "0xcF107AdC80c7F7b5eE430B52744F96e2D76681a20xcF107AdC80c7F7b5eE430B52744F96e2D76681a2e2D76681a2@test.com"
 
     response = await test_client.post(endpoint, json=address_too_long_request)
     assert response.status_code == 422
