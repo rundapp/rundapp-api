@@ -67,4 +67,4 @@ async def test_claim_bounty(
 
     for bounty in verified_bounties:
         assert isinstance(bounty, BountyVerification)
-    assert verified_bounties[0].challenge_id == inserted_challenge_object.id
+    assert verified_bounties[0].challenge.id == inserted_challenge_object.id

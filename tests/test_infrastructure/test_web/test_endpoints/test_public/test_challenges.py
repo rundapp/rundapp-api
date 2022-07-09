@@ -118,7 +118,7 @@ async def test_claim_challenge_bounty(
     assert ClaimBountyResponse(**response_data)
     assert (
         inserted_challenge_object.id
-        == response_data["verified_bounties"][0]["challenge_id"]
+        == response_data["verified_bounties"][0]["challenge"]["id"]
     )
 
 
