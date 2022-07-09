@@ -62,7 +62,7 @@ async def test_claim_bounty(
     )
 
     verified_bounties = await challenge_manager_service.claim_bounty(
-        address=inserted_challenge_object.address
+        address=inserted_challenge_object.challengee_address
     )
 
     for bounty in verified_bounties:

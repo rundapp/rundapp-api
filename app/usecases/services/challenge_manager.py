@@ -141,6 +141,10 @@ class ChallengeManager(IChallengeManager):
                 signed_message = await self.signature_manager.sign(
                     challenge_id=challenge.id
                 )
+                
+                user = await self.users_repo.retrieve(id=challenge.challenger)
+                challenge.challenger_address = user.address
+
                 bounty_verifications.append(
                     BountyVerification(
                         **signed_message.dict(), challenge=challenge

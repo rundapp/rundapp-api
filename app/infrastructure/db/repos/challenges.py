@@ -57,7 +57,7 @@ class ChallengesRepo(IChallengesRepo):
 
         columns_to_select = [
             CHALLENGES,
-            USERS.c.address,
+            USERS.c.address.label("challengee_address"),
             PAYMENTS.c.id.label("payment_id"),
             PAYMENTS.c.complete.label("payment_complete"),
         ]
@@ -113,7 +113,7 @@ class ChallengesRepo(IChallengesRepo):
 
         columns_to_select = [
             CHALLENGES,
-            USERS.c.address,
+            USERS.c.address.label("challengee_address"),
             PAYMENTS.c.id.label("payment_id"),
             PAYMENTS.c.complete.label("payment_complete"),
         ]

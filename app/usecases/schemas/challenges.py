@@ -84,9 +84,14 @@ class ChallengeJoinPayment(ChallengeInDb):
 class ChallengeJoinPaymentAndUsers(ChallengeJoinPayment):
     """Challenge, users, and payment table objects joined."""
 
-    address: Optional[str] = Field(
+    challengee_address: Optional[str] = Field(
         None,
-        description="A user's ethereum address.",
+        description="Challengee's ethereum address.",
+        example="0xb794f5ea0ba39494ce839613fffba74279579268",
+    )
+    challenger_address: Optional[str] = Field(
+        None,
+        description="Challenger's ethereum address.",
         example="0xb794f5ea0ba39494ce839613fffba74279579268",
     )
 
