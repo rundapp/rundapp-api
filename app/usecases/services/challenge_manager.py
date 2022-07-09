@@ -143,7 +143,7 @@ class ChallengeManager(IChallengeManager):
                 )
                 bounty_verifications.append(
                     BountyVerification(
-                        **signed_message.dict(), challenge_id=challenge.id
+                        **signed_message.dict(), challenge=challenge
                     )
                 )
 

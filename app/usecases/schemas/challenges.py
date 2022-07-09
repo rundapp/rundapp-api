@@ -102,26 +102,6 @@ class RetrieveChallengesAdapter(BaseModel):
     payment_complete: Optional[bool]
 
 
-class BountyVerification(BaseModel):
-    """Bounty verification model for rightly claimed bounties."""
-
-    challenge_id: str = Field(
-        ...,
-        description="The unique identifier of the challege associated with the bounty.",
-        example="9ffb6aa3-d776-4ee6-9423-3013a8e5168f",
-    )
-    hashed_message: str = Field(
-        ...,
-        description="A hashed message (hexademical string) for contract signature verification.",
-        example="0x43bdcd52f31fc1ff9e00b231d89f8e6692d1124c622afac4e5e48df72c86b119",
-    )
-    signature: str = Field(
-        ...,
-        description="A 'signed' hashed message for contract signature verification.",
-        example="0x3b99982e7faf1bc4a328ce993c15af402b9179a18eea2738e87b26936f5c5b4f66488db49d255a57c84a0a72",
-    )
-
-
 ##### On-chain Response #####
 class ChallengeOnChain(BaseModel):
     challenger: str
@@ -161,6 +141,22 @@ class IssueChallengeBody(BaseModel):
         ...,
         description="The unique identifier of the challege associated with the bounty.",
         example="9ffb6aa3-d776-4ee6-9423-3013a8e5168f",
+    )
+
+
+class BountyVerification(BaseModel):
+    """Bounty verification model for rightly claimed bounties."""
+
+    challenge: ChallengeJoinPaymentAndUsers
+    hashed_message: str = Field(
+        ...,
+        description="A hashed message (hexademical string) for contract signature verification.",
+        example="0x43bdcd52f31fc1ff9e00b231d89f8e6692d1124c622afac4e5e48df72c86b119",
+    )
+    signature: str = Field(
+        ...,
+        description="A 'signed' hashed message for contract signature verification.",
+        example="0x3b99982e7faf1bc4a328ce993c15af402b9179a18eea2738e87b26936f5c5b4f66488db49d255a57c84a0a72",
     )
 
 
