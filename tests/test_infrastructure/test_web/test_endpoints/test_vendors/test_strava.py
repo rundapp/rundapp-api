@@ -7,7 +7,6 @@ from databases import Database
 from httpx import AsyncClient
 
 from app.usecases.schemas.challenges import (
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
 )
 from app.usecases.schemas.strava import StravaAccessInDb, WebhookVerificationResponse

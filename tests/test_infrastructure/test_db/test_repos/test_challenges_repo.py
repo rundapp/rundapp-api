@@ -4,7 +4,6 @@ import pytest
 
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.schemas.challenges import (
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
     CreateChallengeRepoAdapter,
     RetrieveChallengesAdapter,

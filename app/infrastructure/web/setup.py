@@ -12,8 +12,8 @@ from app.settings import settings
 
 def setup_app():
     app = FastAPI(
-        title="Run Tracker API",
-        description="The following are endpoints for the Pelleum mobile appliaction to utilize.",
+        title="Rundapp API",
+        description="The following are endpoints for the Rundapp's frontend to utilize.",
         openapi_url=settings.openapi_url,
     )
     app.include_router(health.health_router, prefix="/metrics/health")

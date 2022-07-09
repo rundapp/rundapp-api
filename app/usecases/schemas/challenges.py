@@ -4,10 +4,15 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, constr
 
 ##### Exceptions #####
-
-
 class ChallengeException(Exception):
     """General Challenge Exception."""
+
+
+class ChallengeNotFound(ChallengeException):
+    """Raised when challenge is not found."""
+
+class ChallengeUnauthorizedAction(ChallengeException):
+    """Raised when an unauthorized action is attempted."""
 
 
 class ChallengeBase(BaseModel):
@@ -70,20 +75,14 @@ class ChallengeInDb(CreateChallengeRepoAdapter):
     )
 
 
-class ChallengeJoinPayment(ChallengeInDb):
-    """Challenge and payment table objects joined."""
-
+class ChallengeJoinPaymentAndUsers(ChallengeInDb):
+    """Challenge, users, and payment table objects joined."""
     payment_complete: bool = Field(
         ..., description="Whether or not a payment has completed.", example=True
     )
     payment_id: int = Field(
         ..., description="The unique identifier for a payment object.", example=True
     )
-
-
-class ChallengeJoinPaymentAndUsers(ChallengeJoinPayment):
-    """Challenge, users, and payment table objects joined."""
-
     challengee_address: Optional[str] = Field(
         None,
         description="Challengee's ethereum address.",

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query, Path
 from pydantic import constr
 
 from app.dependencies import get_challenge_manager_service, get_users_repo
@@ -7,6 +7,8 @@ from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
 from app.usecases.schemas.challenges import (
     ChallengeException,
+    ChallengeNotFound,
+    ChallengeUnauthorizedAction,
     ClaimBountyResponse,
     IssueChallengeBody,
 )
@@ -42,6 +44,27 @@ async def issue_challenge(
 #     challenges_repo: IChallengesRepo = Depends(get_challenges_repo),
 # ) -> Something:
 #     """Retreives many challenges."""
+
+
+
+@challenges_router.patch(
+    "/{challenge_id}",
+    status_code=204,
+    response_model=None,
+)
+async def record_bounty_payment(
+    challenge_id: constr(max_length=100) = Path(...),
+    challenge_manager_service: IChallengeManager = Depends(get_challenge_manager_service),
+) -> None:
+    """Records Bounty Payment."""
+
+    try:
+        await challenge_manager_service.handle_bounty_payment(challenge_id=challenge_id)
+    except ChallengeException as error:
+        if isinstance(error, ChallengeUnauthorizedAction):
+            raise await ApplicationErrors(detail=str(error)).forbidden_access()
+        raise await ApplicationErrors(detail=str(error)).invalid_resource_id()
+
 
 
 @challenges_router.get(
