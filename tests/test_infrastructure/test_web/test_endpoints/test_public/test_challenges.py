@@ -6,18 +6,15 @@ import pytest_asyncio
 from databases import Database
 from httpx import AsyncClient
 
-from app.usecases.interfaces.services.challange_validation import IChallengeValidation
 from app.usecases.schemas.challenges import (
-    ChallengeJoinPayment,
     ChallengeJoinPaymentAndUsers,
     ClaimBountyResponse,
 )
-from app.usecases.schemas.strava import StravaAccessInDb, WebhookEvent
+from app.usecases.schemas.strava import WebhookEvent
 from tests.constants import (
-    CHALLENGE_FAILING_ACTIVITY_ID,
-    CHALLENGE_PASSING_ACTIVITY_ID,
     CHALLENGEE_ADDRESS,
     TEST_ATHLETE_ID,
+    TEST_CHALLENGE_ID_NOT_FOUND,
 )
 
 
@@ -118,13 +115,13 @@ async def test_claim_challenge_bounty(
     assert ClaimBountyResponse(**response_data)
     assert (
         inserted_challenge_object.id
-        == response_data["verified_bounties"][0]["challenge_id"]
+        == response_data["verified_bounties"][0]["challenge"]["id"]
     )
 
 
 @pytest.mark.asyncio
 async def test_claim_challenge_bounty_invalid_address(
-    test_client: AsyncClient, inserted_challenge_object: ChallengeJoinPayment
+    test_client: AsyncClient, inserted_challenge_object: ChallengeJoinPaymentAndUsers
 ) -> None:
     """Fail: Address too long."""
 
@@ -136,3 +133,57 @@ async def test_claim_challenge_bounty_invalid_address(
 
     # Assertions
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_record_bounty_payment(
+    test_client: AsyncClient, inserted_challenge_for_payment_test: ChallengeJoinPaymentAndUsers, test_db: Database
+) -> None:
+
+    # NOTE: Mock will return a complete challenge with this challenge_id
+    endpoint = f"/public/challenges/{inserted_challenge_for_payment_test.id}"
+
+    response = await test_client.patch(endpoint)
+
+    payment = await test_db.fetch_one(
+        "SELECT * FROM payments WHERE payments.challenge_id = :challenge_id",
+        {"challenge_id": inserted_challenge_for_payment_test.id},
+    )
+
+    # Assertions
+    assert response.status_code == 204
+    assert payment["complete"]
+
+
+
+@pytest.mark.asyncio
+async def test_record_bounty_payment_unauthorized(
+    test_client: AsyncClient, inserted_challenge_object: ChallengeJoinPaymentAndUsers, test_db: Database
+) -> None:
+
+    # NOTE: Mock will return an incomplete challenge with this challenge_id
+    endpoint = f"/public/challenges/{inserted_challenge_object.id}"
+
+    response = await test_client.patch(endpoint)
+
+    payment = await test_db.fetch_one(
+        "SELECT * FROM payments WHERE payments.challenge_id = :challenge_id",
+        {"challenge_id": inserted_challenge_object.id},
+    )
+
+    # Assertions
+    assert response.status_code == 403
+    assert not payment["complete"]
+
+
+@pytest.mark.asyncio
+async def test_record_bounty_payment_invalid_id(
+    test_client: AsyncClient
+) -> None:
+
+    endpoint = f"/public/challenges/{TEST_CHALLENGE_ID_NOT_FOUND}"
+
+    response = await test_client.patch(endpoint)
+
+    # Assertions
+    assert response.status_code == 404

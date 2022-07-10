@@ -9,7 +9,10 @@ from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
     BountyVerification,
     ChallengeException,
-    ChallengeJoinPayment,
+    ChallengeJoinPaymentAndUsers,
+    ChallengeNotFound,
+    ChallengeOnChain,
+    ChallengeUnauthorizedAction,
     CreateChallengeRepoAdapter,
     IssueChallengeBody,
     RetrieveChallengesAdapter,
@@ -42,24 +45,16 @@ class ChallengeManager(IChallengeManager):
             raise ChallengeException("Invalid challenge_id.")
 
         # 2. Retrive on-chain challenge.
-        onchain_challenge = self.ethereum_client.get_challenge(
-            challenge_id=payload.challenge_id
-        )
+        onchain_challenge = self.__retrieve_onchain_challenge(challenge_id=payload.challenge_id)
 
-        # 3. Ensure the challenge exists.
-        if not int(onchain_challenge.challengee, 0) or not int(
-            onchain_challenge.challenger, 0
-        ):
-            raise ChallengeException("On-chain challenge not found.")
-
-        # 4. See if users already exist. If not, create them.
+        # 3. See if users already exist. If not, create them.
         participants = await self.handle_users(
             payload=payload,
             challenger_address=onchain_challenge.challenger,
             challengee_address=onchain_challenge.challengee,
         )
 
-        # 5. Create challenge.
+        # 4. Create challenge.
         issued_challenge = await self.__create_new_challenge(
             challenge_id=payload.challenge_id,
             participants=participants,
@@ -68,7 +63,7 @@ class ChallengeManager(IChallengeManager):
             pace=onchain_challenge.speed,
         )
 
-        # 6. Notify participants via email.
+        # 5. Notify participants via email.
         await self.email_manager.challenge_issuance_notification(
             participants=participants, challenge=issued_challenge
         )
@@ -110,7 +105,7 @@ class ChallengeManager(IChallengeManager):
         bounty: int,
         distance: float,
         pace: Optional[int],
-    ) -> ChallengeJoinPayment:
+    ) -> ChallengeJoinPaymentAndUsers:
         """Creates challenge."""
 
         return await self.challenges_repo.create(
@@ -141,7 +136,7 @@ class ChallengeManager(IChallengeManager):
                 signed_message = await self.signature_manager.sign(
                     challenge_id=challenge.id
                 )
-                
+
                 user = await self.users_repo.retrieve(id=challenge.challenger)
                 challenge.challenger_address = user.address
 
@@ -152,3 +147,31 @@ class ChallengeManager(IChallengeManager):
                 )
 
         return bounty_verifications
+
+    async def handle_bounty_payment(self, challenge_id: str) -> None:
+        """Checks and updates challenge payment completion."""
+
+        onchain_challenge = self.__retrieve_onchain_challenge(challenge_id=challenge_id)
+
+        if not onchain_challenge.complete:
+            raise ChallengeUnauthorizedAction("On-chain challenge not complete.")
+            
+        await self.challenges_repo.update_payment(id=challenge_id)
+
+
+    def __retrieve_onchain_challenge(self, challenge_id: str) -> ChallengeOnChain:
+        """Retrieves challenge saved on-chain."""
+
+        # 1. Get challenge
+        onchain_challenge = self.ethereum_client.get_challenge(
+            challenge_id=challenge_id
+        )
+
+        # 2. Ensure the challenge exists.
+        if not int(onchain_challenge.challengee, 0) or not int(
+            onchain_challenge.challenger, 0
+        ):
+            raise ChallengeNotFound("On-chain challenge not found.")
+
+        return onchain_challenge
+

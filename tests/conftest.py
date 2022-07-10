@@ -44,6 +44,7 @@ from tests.constants import (
     CHALLENGER_ADDRESS,
     DEFAULT_NUMBER_OF_INSERTED_OBJECTS,
     TEST_ATHLETE_ID,
+    TEST_CHALLENGE_ID
 )
 from tests.mocks.mock_strava_client import MockStravaClient
 from tests.mocks.mock_ethereum_client import MockEthereumClient
@@ -136,7 +137,7 @@ async def challenge_manager_service(
     email_manager_service: IEmailManager,
 ) -> IChallengeManager:
     """ChallangerManager with test services and test repos."""
-    
+
     return ChallengeManager(
         ethereum_client=ethereum_client,
         users_repo=users_repo,
@@ -249,6 +250,31 @@ async def inserted_challenge_object(
 
     return await challenges_repo.create(new_challenge=create_challenge_repo_adapter)
 
+
+@pytest_asyncio.fixture
+async def challenge_repo_adapter_for_payment_test(
+    two_inserted_user_objects: List[UserInDb],
+) -> CreateChallengeRepoAdapter:
+    """We need specific challenge id to get Mock to return 
+    an onchain challenge with complete set to True."""
+    return CreateChallengeRepoAdapter(
+        id=TEST_CHALLENGE_ID,
+        challenger=two_inserted_user_objects[0].id,
+        challengee=two_inserted_user_objects[1].id,
+        bounty=1000,
+        distance=8000.0,
+        pace=2.5,  
+    )
+
+
+@pytest_asyncio.fixture
+async def inserted_challenge_for_payment_test(
+    challenge_repo_adapter_for_payment_test: CreateChallengeRepoAdapter,
+    challenges_repo: IChallengesRepo,
+) -> ChallengeJoinPaymentAndUsers:
+    """Inserts a user object into the database for other tests."""
+
+    return await challenges_repo.create(new_challenge=challenge_repo_adapter_for_payment_test)
 
 @pytest_asyncio.fixture
 async def many_inserted_challenge_objects(

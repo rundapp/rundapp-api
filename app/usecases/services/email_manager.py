@@ -5,7 +5,7 @@ from app.dependencies import logger
 from app.settings import settings
 from app.usecases.interfaces.repos.strava import IStravaRepo
 from app.usecases.interfaces.services.email_manager import IEmailManager
-from app.usecases.schemas.challenges import ChallengeJoinPayment
+from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
 from app.usecases.schemas.users import Participants
 
 
@@ -36,7 +36,7 @@ class EmailManager(IEmailManager):
             logger.info("[EmailManager]: Successfully sent email.")
 
     async def challenge_issuance_notification(
-        self, participants: Participants, challenge: ChallengeJoinPayment
+        self, participants: Participants, challenge: ChallengeJoinPaymentAndUsers
     ) -> None:
         """Notifies challenge participants."""
 

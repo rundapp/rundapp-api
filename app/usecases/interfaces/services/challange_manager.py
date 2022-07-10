@@ -23,3 +23,7 @@ class IChallengeManager(ABC):
     @abstractmethod
     async def claim_bounty(self, address: str) -> List[BountyVerification]:
         """Performs actions necessary for a user to rightly claim a bounty."""
+
+    @abstractmethod
+    async def handle_bounty_payment(self, challenge_id: str) -> None:
+        """Checks and updates challenge payment completion."""
