@@ -1,6 +1,7 @@
 import click
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.dependencies import get_client_session, get_event_loop
 from app.infrastructure.db.core import get_or_create_database
@@ -19,6 +20,16 @@ def setup_app():
     app.include_router(health.health_router, prefix="/metrics/health")
     app.include_router(strava.strava_router, prefix="/vendors/strava")
     app.include_router(challenges.challenges_router, prefix="/public/challenges")
+
+    # CORS (Cross-Origin Resource Sharing)
+    origins = ["*"]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     return app
 
