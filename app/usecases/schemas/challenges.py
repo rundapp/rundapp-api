@@ -108,6 +108,7 @@ class RetrieveChallengesAdapter(BaseModel):
 
 ##### On-chain Response #####
 class ChallengeOnChain(BaseModel):
+    challengeId: str
     challenger: str
     challengee: str
     bounty: int

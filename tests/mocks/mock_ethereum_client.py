@@ -11,6 +11,7 @@ class MockEthereumClient(IEthereumClient):
         """Retrieves on-chain challenge by challenge_id."""
 
         onchain_challenge = ChallengeOnChain(
+            challengeId="4fbf9ee4-5aba-4b79-a62c-7f5ec1a4ecd1"
             challenger="0x3f9E4A6120aB7868485602241AbE9D85d6F9E382",
             challengee="0xDe076D651613C7bde3260B8B69C860D67Bc16f49",
             bounty=14400000000000000,

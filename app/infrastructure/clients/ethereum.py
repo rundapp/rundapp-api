@@ -20,11 +20,12 @@ class EthereumClient(IEthereumClient):
         response = self.contract.functions.challengeLookup(challenge_id).call()
 
         return ChallengeOnChain(
-            challenger=response[0],
-            challengee=response[1],
-            bounty=response[2],
-            distance=response[3],
-            speed=response[4],
-            issuedAt=response[5],
-            complete=response[6],
+            challengeId=response[0],
+            challenger=response[1],
+            challengee=response[2],
+            bounty=response[3],
+            distance=response[4],
+            speed=response[5],
+            issuedAt=response[6],
+            complete=response[7],
         )
