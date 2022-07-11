@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Depends, Query, Path
+from fastapi import APIRouter, Body, Depends, Query, Path, Response
+from starlette.status import HTTP_204_NO_CONTENT
 from pydantic import constr
 
 from app.dependencies import get_challenge_manager_service, get_users_repo
@@ -49,8 +50,8 @@ async def issue_challenge(
 
 @challenges_router.patch(
     "/{challenge_id}",
-    status_code=204,
-    response_model=None,
+    status_code=HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def record_bounty_payment(
     challenge_id: constr(max_length=100) = Path(...),
