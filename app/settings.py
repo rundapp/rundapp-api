@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     # Application Settings
     application_name: str = "rundapp"
-    environment: str
+    environment: str = "development"
     log_level: str = "info"
     server_host: str = "0.0.0.0"
     server_port: int

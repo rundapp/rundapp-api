@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+docker_image = rundapp-api
+docker_username = adamcuculich
 formatted_code := app/ migrations/ tests/ tasks.py
 rev_id = ""
 migration_message = ""
@@ -24,6 +26,11 @@ run:
 make run-container:
 	docker-compose up -d
 
+build:
+	docker build -t $(docker_username)/$(docker_image):latest .
+
+push:
+	docker push $(docker_username)/$(docker_image):latest
 
 test: build
 	function removeContainers {
