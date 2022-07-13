@@ -55,7 +55,7 @@ class EmailManager(IEmailManager):
         needs_auth = await self.__check_authorizaion(participants=participants)
 
         challengee_body = f"{challenger} challenged you to run {challenge.distance} miles at a {challenge.pace}/min pace. You'll receive {challenge.bounty} Ether if you complete the challenge.\n\n"
-        auth_language = f"In order to complete this challenge, please provide Rundapp access to your Strava account using the following link. If you do not already have a Strava account, this same link will prompt you to create one: https://www.strava.com/oauth/authorize?client_id=88040&response_type=code&redirect_uri=https://www.rundapp.quest?user_id={participants.challengee.id}&approval_prompt=force&scope=read_all,activity:read_all"
+        auth_language = f"In order to complete this challenge, please provide Rundapp access to your Strava account using the following link. If you do not already have a Strava account, this same link will prompt you to create one: https://www.strava.com/oauth/authorize?client_id=88040&response_type=code&redirect_uri=https://api.rundapp.quest?user_id={participants.challengee.id}&approval_prompt=force&scope=read_all,activity:read_all"
         
 
         # 2. Notify Challengee.
