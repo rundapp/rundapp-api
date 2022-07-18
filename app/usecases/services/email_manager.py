@@ -110,9 +110,9 @@ class EmailManager(IEmailManager):
             else participants.challengee.email
         )
 
-        challenge_language = f"Challenge Details:\n- id: {challenge.id}\n- distance: {challenge.distance} miles\n- pace: {challenge.pace} miles/min\n\nChallenge Completion Details:\n- distance: {completed_challenge.distance} miles\n- pace: {completed_challenge.pace.minutes}:{completed_challenge.pace.seconds}/mile\n\n"
+        challenge_language = f"Challenge Details:\n- id: {challenge.id}\n- distance: {challenge.distance} miles\n- pace: {challenge.pace.minutes}:{challenge.pace.seconds}/mile\n\nChallenge Completion Details:\n- distance: {completed_challenge.distance} miles\n- pace: {completed_challenge.pace.minutes}:{completed_challenge.pace.seconds}/mile\n\n"
         challenger_body = f"{challengee} successfully completed your challenge, and can now claim the associated bounty!🎉\n\n"
-        challengee_body = f"Congratulations! You successfully completed a challenge issued by {challenger}!🎉 You can now claim your bounty at: https://rundapp.quest/claim\n\n"
+        challengee_body = f"Congratulations! You successfully completed a challenge issued by {challenger}!🎉\n\nYou can now claim your bounty at: https://rundapp.quest/claim\n\n"
 
         # 2. Notify Challengee.
         await self.send(
