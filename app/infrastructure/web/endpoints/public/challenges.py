@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Body, Depends, Query, Path, Response
-from starlette.status import HTTP_204_NO_CONTENT
+from fastapi import APIRouter, Body, Depends, Path, Query, Response
 from pydantic import constr
+from starlette.status import HTTP_204_NO_CONTENT
 
 from app.dependencies import get_challenge_manager_service, get_users_repo
 from app.libraries.errors import ApplicationErrors
@@ -47,7 +47,6 @@ async def issue_challenge(
 #     """Retreives many challenges."""
 
 
-
 @challenges_router.patch(
     "/{challenge_id}",
     status_code=HTTP_204_NO_CONTENT,
@@ -55,7 +54,9 @@ async def issue_challenge(
 )
 async def record_bounty_payment(
     challenge_id: constr(max_length=100) = Path(...),
-    challenge_manager_service: IChallengeManager = Depends(get_challenge_manager_service),
+    challenge_manager_service: IChallengeManager = Depends(
+        get_challenge_manager_service
+    ),
 ) -> None:
     """Records Bounty Payment."""
 
@@ -65,7 +66,6 @@ async def record_bounty_payment(
         if isinstance(error, ChallengeUnauthorizedAction):
             raise await ApplicationErrors(detail=str(error)).forbidden_access()
         raise await ApplicationErrors(detail=str(error)).invalid_resource_id()
-
 
 
 @challenges_router.get(

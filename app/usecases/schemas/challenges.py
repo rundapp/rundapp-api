@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, constr
+
 
 ##### Exceptions #####
 class ChallengeException(Exception):
@@ -11,8 +12,15 @@ class ChallengeException(Exception):
 class ChallengeNotFound(ChallengeException):
     """Raised when challenge is not found."""
 
+
 class ChallengeUnauthorizedAction(ChallengeException):
     """Raised when an unauthorized action is attempted."""
+
+
+#######################
+class Pace(BaseModel):
+    minutes: int
+    seconds: int
 
 
 class ChallengeBase(BaseModel):
@@ -25,12 +33,12 @@ class ChallengeBase(BaseModel):
     )
     distance: float = Field(
         ...,
-        description="The distance in miles the challengee must run to complete the challenge.",
+        description="The distance (in centimeters) the challengee must run to complete the challenge.",
         example=10000.00,
     )
-    pace: Optional[float] = Field(
+    pace: Union[Optional[float], Pace] = Field(
         None,
-        description="The average time (seconds) per mile of the specified distance the challenge must acheive during the run.",
+        description="The average speed (centimeters/second) of the specified distance the challenge must acheive during the run.",
         example=500,
     )
 
@@ -77,6 +85,7 @@ class ChallengeInDb(CreateChallengeRepoAdapter):
 
 class ChallengeJoinPaymentAndUsers(ChallengeInDb):
     """Challenge, users, and payment table objects joined."""
+
     payment_complete: bool = Field(
         ..., description="Whether or not a payment has completed.", example=True
     )
@@ -163,6 +172,11 @@ class BountyVerification(BaseModel):
         description="A 'signed' hashed message for contract signature verification.",
         example="0x3b99982e7faf1bc4a328ce993c15af402b9179a18eea2738e87b26936f5c5b4f66488db49d255a57c84a0a72",
     )
+
+
+class CompletedChallenge(BaseModel):
+    distance: float
+    pace: Pace
 
 
 ##### Response Models #####

@@ -22,7 +22,7 @@ async def issue_challenge_body() -> IssueChallengeBody:
         "challengee_name": "Alice",
         "challenger_email": "challenger@testservice.com",
         "challengee_email": "challengee@testservice.com",
-        "challenge_id": str(uuid.uuid4())
+        "challenge_id": str(uuid.uuid4()),
     }
 
     return IssueChallengeBody(**test_json)
@@ -103,8 +103,9 @@ async def test_handle_bounty_payment(
     test_db: Database,
 ) -> None:
 
-    
-    await challenge_manager_service.handle_bounty_payment(challenge_id=inserted_challenge_for_payment_test.id)
+    await challenge_manager_service.handle_bounty_payment(
+        challenge_id=inserted_challenge_for_payment_test.id
+    )
 
     payment = await test_db.fetch_one(
         "SELECT * FROM payments WHERE payments.challenge_id = :challenge_id",
@@ -112,6 +113,7 @@ async def test_handle_bounty_payment(
     )
 
     assert payment["complete"]
+
 
 @pytest.mark.asyncio
 async def test_handle_bounty_payment_unauthorized(
@@ -121,7 +123,9 @@ async def test_handle_bounty_payment_unauthorized(
 ) -> None:
 
     with pytest.raises(ChallengeUnauthorizedAction):
-        await challenge_manager_service.handle_bounty_payment(challenge_id=inserted_challenge_object.id)
+        await challenge_manager_service.handle_bounty_payment(
+            challenge_id=inserted_challenge_object.id
+        )
 
     payment = await test_db.fetch_one(
         "SELECT * FROM payments WHERE payments.challenge_id = :challenge_id",
@@ -139,7 +143,9 @@ async def test_handle_bounty_payment_not_found(
 ) -> None:
 
     with pytest.raises(ChallengeNotFound):
-        await challenge_manager_service.handle_bounty_payment(challenge_id=TEST_CHALLENGE_ID_NOT_FOUND)
+        await challenge_manager_service.handle_bounty_payment(
+            challenge_id=TEST_CHALLENGE_ID_NOT_FOUND
+        )
 
     payment = await test_db.fetch_one(
         "SELECT * FROM payments WHERE payments.challenge_id = :challenge_id",

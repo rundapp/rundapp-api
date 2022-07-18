@@ -20,13 +20,14 @@ from app.infrastructure.db.repos.challenges import ChallengesRepo
 from app.infrastructure.db.repos.strava import StravaRepo
 from app.infrastructure.db.repos.users import UsersRepo
 from app.infrastructure.web.setup import setup_app
-from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.clients.ethereum import IEthereumClient
+from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.strava import IStravaRepo
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
 from app.usecases.interfaces.services.challange_validation import IChallengeValidation
+from app.usecases.interfaces.services.conversion_manager import IConversionManager
 from app.usecases.interfaces.services.email_manager import IEmailManager
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
@@ -37,6 +38,7 @@ from app.usecases.schemas.strava import CreateStravaAccessAdapter, StravaAccessI
 from app.usecases.schemas.users import UserBase, UserInDb
 from app.usecases.services.challenge_manager import ChallengeManager
 from app.usecases.services.challenge_validation import ChallengeValidation
+from app.usecases.services.conversion_manager import ConversionManager
 from app.usecases.services.email_manager import EmailManager
 from app.usecases.services.signature_manager import SignatureManager
 from tests.constants import (
@@ -44,10 +46,11 @@ from tests.constants import (
     CHALLENGER_ADDRESS,
     DEFAULT_NUMBER_OF_INSERTED_OBJECTS,
     TEST_ATHLETE_ID,
-    TEST_CHALLENGE_ID
+    TEST_CHALLENGE_ID,
 )
-from tests.mocks.mock_strava_client import MockStravaClient
 from tests.mocks.mock_ethereum_client import MockEthereumClient
+from tests.mocks.mock_strava_client import MockStravaClient
+
 
 # Database Connection
 @pytest_asyncio.fixture
@@ -108,6 +111,11 @@ async def signature_manager_service() -> ISignatureManager:
 
 
 @pytest_asyncio.fixture
+async def conversion_manager_service() -> IConversionManager:
+    return ConversionManager()
+
+
+@pytest_asyncio.fixture
 async def email_manager_service(strava_repo: IStravaRepo) -> IEmailManager:
     return EmailManager(strava_repo=strava_repo)
 
@@ -116,15 +124,19 @@ async def email_manager_service(strava_repo: IStravaRepo) -> IEmailManager:
 async def challenge_validation_service(
     strava_client: IStravaClient,
     strava_repo: IStravaRepo,
+    users_repo: IUsersRepo,
     challenges_repo: IChallengesRepo,
     email_manager_service: IEmailManager,
+    conversion_manager_service: IConversionManager,
 ) -> IChallengeValidation:
 
     return ChallengeValidation(
         strava_client=strava_client,
         strava_repo=strava_repo,
+        users_repo=users_repo,
         challenges_repo=challenges_repo,
         email_manager=email_manager_service,
+        conversion_manager=conversion_manager_service,
     )
 
 
@@ -135,6 +147,7 @@ async def challenge_manager_service(
     challenges_repo: IChallengesRepo,
     signature_manager_service: ISignatureManager,
     email_manager_service: IEmailManager,
+    conversion_manager_service: IConversionManager,
 ) -> IChallengeManager:
     """ChallangerManager with test services and test repos."""
 
@@ -144,6 +157,7 @@ async def challenge_manager_service(
         challenges_repo=challenges_repo,
         signature_manager=signature_manager_service,
         email_manager=email_manager_service,
+        conversion_manager=conversion_manager_service,
     )
 
 
@@ -236,8 +250,8 @@ async def create_challenge_repo_adapter(
         challenger=two_inserted_user_objects[0].id,
         challengee=two_inserted_user_objects[1].id,
         bounty=1000,
-        distance=8000.0,  # 8 kilometers
-        pace=2.5,  # meters / second
+        distance=800000.0,  # centimeters
+        pace=250,  # centimeters / second
     )
 
 
@@ -255,7 +269,7 @@ async def inserted_challenge_object(
 async def challenge_repo_adapter_for_payment_test(
     two_inserted_user_objects: List[UserInDb],
 ) -> CreateChallengeRepoAdapter:
-    """We need specific challenge id to get Mock to return 
+    """We need specific challenge id to get Mock to return
     an onchain challenge with complete set to True."""
     return CreateChallengeRepoAdapter(
         id=TEST_CHALLENGE_ID,
@@ -263,7 +277,7 @@ async def challenge_repo_adapter_for_payment_test(
         challengee=two_inserted_user_objects[1].id,
         bounty=1000,
         distance=8000.0,
-        pace=2.5,  
+        pace=2.5,
     )
 
 
@@ -274,7 +288,10 @@ async def inserted_challenge_for_payment_test(
 ) -> ChallengeJoinPaymentAndUsers:
     """Inserts a user object into the database for other tests."""
 
-    return await challenges_repo.create(new_challenge=challenge_repo_adapter_for_payment_test)
+    return await challenges_repo.create(
+        new_challenge=challenge_repo_adapter_for_payment_test
+    )
+
 
 @pytest_asyncio.fixture
 async def many_inserted_challenge_objects(

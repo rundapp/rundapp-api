@@ -4,6 +4,7 @@ from app.usecases.interfaces.clients.ethereum import IEthereumClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
+from app.usecases.interfaces.services.conversion_manager import IConversionManager
 from app.usecases.interfaces.services.email_manager import IEmailManager
 from app.usecases.interfaces.services.signature_manager import ISignatureManager
 from app.usecases.schemas.challenges import (
@@ -28,12 +29,14 @@ class ChallengeManager(IChallengeManager):
         challenges_repo: IChallengesRepo,
         signature_manager: ISignatureManager,
         email_manager: IEmailManager,
+        conversion_manager: IConversionManager,
     ):
         self.ethereum_client = ethereum_client
         self.users_repo = users_repo
         self.challenges_repo = challenges_repo
         self.signature_manager = signature_manager
         self.email_manager = email_manager
+        self.conversion_manager = conversion_manager
 
     async def handle_challenge_issuance(self, payload: IssueChallengeBody) -> None:
         """Handles a newly issued challenge."""
@@ -45,7 +48,9 @@ class ChallengeManager(IChallengeManager):
             raise ChallengeException("Invalid challenge_id.")
 
         # 2. Retrive on-chain challenge.
-        onchain_challenge = self.__retrieve_onchain_challenge(challenge_id=payload.challenge_id)
+        onchain_challenge = self.__retrieve_onchain_challenge(
+            challenge_id=payload.challenge_id
+        )
 
         # 3. See if users already exist. If not, create them.
         participants = await self.handle_users(
@@ -63,7 +68,17 @@ class ChallengeManager(IChallengeManager):
             pace=onchain_challenge.speed,
         )
 
-        # 5. Notify participants via email.
+        # 5. Unit conversion.
+        issued_challenge.distance = self.conversion_manager.cm_to_miles(
+            distance=issued_challenge.distance
+        )
+        issued_challenge.pace = (
+            self.conversion_manager.cm_per_second_to_minutes_per_mile(
+                pace=issued_challenge.pace
+            )
+        )
+
+        # 6. Notify participants via email.
         await self.email_manager.challenge_issuance_notification(
             participants=participants, challenge=issued_challenge
         )
@@ -141,9 +156,7 @@ class ChallengeManager(IChallengeManager):
                 challenge.challenger_address = user.address
 
                 bounty_verifications.append(
-                    BountyVerification(
-                        **signed_message.dict(), challenge=challenge
-                    )
+                    BountyVerification(**signed_message.dict(), challenge=challenge)
                 )
 
         return bounty_verifications
@@ -155,9 +168,8 @@ class ChallengeManager(IChallengeManager):
 
         if not onchain_challenge.complete:
             raise ChallengeUnauthorizedAction("On-chain challenge not complete.")
-            
-        await self.challenges_repo.update_payment(id=challenge_id)
 
+        await self.challenges_repo.update_payment(id=challenge_id)
 
     def __retrieve_onchain_challenge(self, challenge_id: str) -> ChallengeOnChain:
         """Retrieves challenge saved on-chain."""
@@ -174,4 +186,3 @@ class ChallengeManager(IChallengeManager):
             raise ChallengeNotFound("On-chain challenge not found.")
 
         return onchain_challenge
-

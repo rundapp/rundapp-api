@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Any, Mapping, Tuple
 
 import pytest
@@ -6,9 +7,7 @@ import pytest_asyncio
 from databases import Database
 from httpx import AsyncClient
 
-from app.usecases.schemas.challenges import (
-    ChallengeJoinPaymentAndUsers,
-)
+from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
 from app.usecases.schemas.strava import StravaAccessInDb, WebhookVerificationResponse
 from app.usecases.schemas.users import UserInDb
 from tests.constants import (
@@ -170,3 +169,21 @@ async def test_receive_authorization_code(
     assert response.status_code == 200
     assert StravaAccessInDb(**test_saved_strava_access_obj)
     assert test_saved_strava_access_obj["scope"] == ["activity:read_all", "read_all"]
+
+
+@pytest.mark.asyncio
+async def test_receive_faulty_authorization_code(
+    test_client: AsyncClient, test_db: Database, inserted_user_object: UserInDb
+) -> None:
+
+    endpoint = "/vendors/strava/authorize"
+    params = {
+        "user_id": random.randint(1000000, 1000000000),
+        "code": "something from strava",
+        "scope": "activity:read_all,read_all",
+    }
+
+    response = await test_client.get(endpoint, params=params)
+
+    # Assertions
+    assert response.status_code == 404

@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
-from app.usecases.schemas.challenges import ChallengeJoinPaymentAndUsers
+from app.usecases.schemas.challenges import (
+    ChallengeJoinPaymentAndUsers,
+    CompletedChallenge,
+)
 from app.usecases.schemas.users import Participants
 
 
@@ -14,3 +17,12 @@ class IEmailManager(ABC):
         self, participants: Participants, challenge: ChallengeJoinPaymentAndUsers
     ) -> None:
         """Notifies challenge participants."""
+
+    @abstractmethod
+    async def completed_challenge_notification(
+        self,
+        participants: Participants,
+        challenge: ChallengeJoinPaymentAndUsers,
+        completed_challenge: CompletedChallenge,
+    ) -> None:
+        """Notifies participants of completed challenge."""

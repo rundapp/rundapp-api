@@ -1,5 +1,5 @@
-from typing import Any, Mapping
 import uuid
+from typing import Any, Mapping
 
 import pytest
 import pytest_asyncio
@@ -40,7 +40,7 @@ async def issue_challenge_request_json() -> Mapping[str, Any]:
         "challengee_name": "Alice",
         "challenger_email": "challenger@test.com",
         "challengee_email": "challengee@test.com",
-        "challenge_id": str(uuid.uuid4())
+        "challenge_id": str(uuid.uuid4()),
     }
 
 
@@ -137,7 +137,9 @@ async def test_claim_challenge_bounty_invalid_address(
 
 @pytest.mark.asyncio
 async def test_record_bounty_payment(
-    test_client: AsyncClient, inserted_challenge_for_payment_test: ChallengeJoinPaymentAndUsers, test_db: Database
+    test_client: AsyncClient,
+    inserted_challenge_for_payment_test: ChallengeJoinPaymentAndUsers,
+    test_db: Database,
 ) -> None:
 
     # NOTE: Mock will return a complete challenge with this challenge_id
@@ -155,10 +157,11 @@ async def test_record_bounty_payment(
     assert payment["complete"]
 
 
-
 @pytest.mark.asyncio
 async def test_record_bounty_payment_unauthorized(
-    test_client: AsyncClient, inserted_challenge_object: ChallengeJoinPaymentAndUsers, test_db: Database
+    test_client: AsyncClient,
+    inserted_challenge_object: ChallengeJoinPaymentAndUsers,
+    test_db: Database,
 ) -> None:
 
     # NOTE: Mock will return an incomplete challenge with this challenge_id
@@ -177,9 +180,7 @@ async def test_record_bounty_payment_unauthorized(
 
 
 @pytest.mark.asyncio
-async def test_record_bounty_payment_invalid_id(
-    test_client: AsyncClient
-) -> None:
+async def test_record_bounty_payment_invalid_id(test_client: AsyncClient) -> None:
 
     endpoint = f"/public/challenges/{TEST_CHALLENGE_ID_NOT_FOUND}"
 

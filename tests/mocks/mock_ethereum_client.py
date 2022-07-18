@@ -1,12 +1,9 @@
-from app.usecases.schemas.challenges import ChallengeOnChain
 from app.usecases.interfaces.clients.ethereum import IEthereumClient
-
+from app.usecases.schemas.challenges import ChallengeOnChain
 from tests.constants import TEST_CHALLENGE_ID, TEST_CHALLENGE_ID_NOT_FOUND
 
 
-
 class MockEthereumClient(IEthereumClient):
-
     def get_challenge(self, challenge_id: str) -> ChallengeOnChain:
         """Retrieves on-chain challenge by challenge_id."""
 

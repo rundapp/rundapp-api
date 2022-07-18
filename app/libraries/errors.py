@@ -24,4 +24,3 @@ class ApplicationErrors:
             if self.detail
             else "The supplied resource ID is invalid.",
         )
-

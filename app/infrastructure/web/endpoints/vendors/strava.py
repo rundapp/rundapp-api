@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Body, Depends, Query
-from pydantic import constr
+from pydantic import conint, constr
 
 from app.dependencies import (
     get_challenge_validation_service,
     get_strava_client,
     get_strava_repo,
+    get_users_repo,
 )
 from app.libraries.errors import ApplicationErrors
 from app.settings import settings
 from app.usecases.interfaces.clients.strava import IStravaClient
 from app.usecases.interfaces.repos.strava import IStravaRepo
+from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_validation import IChallengeValidation
 from app.usecases.schemas.strava import (
     CreateStravaAccessAdapter,
@@ -70,13 +72,19 @@ async def validate_webhook_subscription(
     response_model=None,
 )
 async def receive_authorization_code(
-    user_id: str = Query(...),
-    code: str = Query(...),
-    scope: str = Query(...),
+    user_id: conint(lt=1000000000000) = Query(...),
+    code: constr(max_length=256) = Query(...),
+    scope: constr(max_length=256) = Query(...),
     strava_repo: IStravaRepo = Depends(get_strava_repo),
+    users_repo: IUsersRepo = Depends(get_users_repo),
     strava_client: IStravaClient = Depends(get_strava_client),
 ) -> None:
     """Endpoint that users are redirected to upon authorizing this app."""
+
+    user = await users_repo.retrieve(id=user_id)
+
+    if not user:
+        raise await ApplicationErrors().invalid_resource_id()
 
     access_response = await strava_client.exhange_code_for_token(code=code)
 
