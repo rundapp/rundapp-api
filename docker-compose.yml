@@ -13,7 +13,7 @@ services:
 
     continuous-integration:
         container_name: rundapp-api-continuous-integration
-        image: "rundapp/rundapp-api"
+        image: "adamcuculich/rundapp-api"
         env_file:
             - tests.env
         entrypoint: /app/continuous_integration/initiate_tests.sh

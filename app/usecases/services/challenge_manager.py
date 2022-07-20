@@ -77,6 +77,7 @@ class ChallengeManager(IChallengeManager):
                 pace=issued_challenge.pace
             )
         )
+        issued_challenge.bounty = issued_challenge.bounty / 1e18
 
         # 6. Notify participants via email.
         await self.email_manager.challenge_issuance_notification(

@@ -13,7 +13,7 @@ async def test_cm_to_miles(
 
     miles = conversion_manager_service.cm_to_miles(distance=DISTANCE)
 
-    assert miles == (DISTANCE / 100) / 1609.34
+    assert miles == round(((DISTANCE / 100) / 1609.34), 2)
 
 
 @pytest.mark.asyncio

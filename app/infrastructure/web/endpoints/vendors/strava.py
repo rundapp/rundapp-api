@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, Depends, Query
+from fastapi.responses import HTMLResponse
 from pydantic import conint, constr
 
 from app.dependencies import (
@@ -68,8 +69,7 @@ async def validate_webhook_subscription(
 
 @strava_router.get(
     "/authorize",
-    status_code=200,
-    response_model=None,
+    response_class=HTMLResponse,
 )
 async def receive_authorization_code(
     user_id: conint(lt=1000000000000) = Query(...),
@@ -78,7 +78,7 @@ async def receive_authorization_code(
     strava_repo: IStravaRepo = Depends(get_strava_repo),
     users_repo: IUsersRepo = Depends(get_users_repo),
     strava_client: IStravaClient = Depends(get_strava_client),
-) -> None:
+) -> HTMLResponse:
     """Endpoint that users are redirected to upon authorizing this app."""
 
     user = await users_repo.retrieve(id=user_id)
@@ -98,3 +98,16 @@ async def receive_authorization_code(
             scope=scope.split(","),
         )
     )
+
+    html_content = """
+        <html>
+            <head>
+                <title>It worked</title>
+            </head>
+            <body>
+                <h1 style="text-align:center;font-family:'Avenir'">Strava integration was successful! You can now close this window.</h1>
+            </body>
+        </html>
+    """
+
+    return HTMLResponse(content=html_content, status_code=200)

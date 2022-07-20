@@ -13,7 +13,7 @@ class ConversionManager(IConversionManager):
         - 1609.34 meters in 1 mile
         """
 
-        return (distance / 100) / 1609.34
+        return round(((distance / 100) / 1609.34), 2)
 
     def cm_per_second_to_minutes_per_mile(self, pace: int) -> Pace:
         """
