@@ -8,7 +8,6 @@ from app.usecases.interfaces.repos.users import IUsersRepo
 from app.usecases.interfaces.services.challange_manager import IChallengeManager
 from app.usecases.schemas.challenges import (
     ChallengeException,
-    ChallengeNotFound,
     ChallengeUnauthorizedAction,
     ClaimBountyResponse,
     IssueChallengeBody,

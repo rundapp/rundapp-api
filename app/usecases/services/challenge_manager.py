@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+import asyncio
+
 from app.usecases.interfaces.clients.ethereum import IEthereumClient
 from app.usecases.interfaces.repos.challenges import IChallengesRepo
 from app.usecases.interfaces.repos.users import IUsersRepo
@@ -48,7 +50,7 @@ class ChallengeManager(IChallengeManager):
             raise ChallengeException("Invalid challenge_id.")
 
         # 2. Retrive on-chain challenge.
-        onchain_challenge = self.__retrieve_onchain_challenge(
+        onchain_challenge = await self.__retrieve_onchain_challenge(
             challenge_id=payload.challenge_id
         )
 
@@ -165,22 +167,25 @@ class ChallengeManager(IChallengeManager):
     async def handle_bounty_payment(self, challenge_id: str) -> None:
         """Checks and updates challenge payment completion."""
 
-        onchain_challenge = self.__retrieve_onchain_challenge(challenge_id=challenge_id)
+        onchain_challenge = await self.__retrieve_onchain_challenge(challenge_id=challenge_id)
 
         if not onchain_challenge.complete:
             raise ChallengeUnauthorizedAction("On-chain challenge not complete.")
 
         await self.challenges_repo.update_payment(id=challenge_id)
 
-    def __retrieve_onchain_challenge(self, challenge_id: str) -> ChallengeOnChain:
+    async def __retrieve_onchain_challenge(self, challenge_id: str) -> ChallengeOnChain:
         """Retrieves challenge saved on-chain."""
 
-        # 1. Get challenge
+        # 1. Sleep 3 seconds, before checking for on-chain challenge
+        await asyncio.sleep(3)
+
+        # 2. Get challenge
         onchain_challenge = self.ethereum_client.get_challenge(
             challenge_id=challenge_id
         )
 
-        # 2. Ensure the challenge exists.
+        # 3. Ensure the challenge exists.
         if not int(onchain_challenge.challengee, 0) or not int(
             onchain_challenge.challenger, 0
         ):
