@@ -65,7 +65,7 @@ class ChallengeValidation(IChallengeValidation):
                 activity.get("distance") >= (challenge.distance / 100),  # Meters
                 activity.get("average_speed")
                 >= (challenge.pace / 100),  # Meters/Second
-                activity.get("type") == "Run",
+                activity.get("type") == "Run" or activity.get("type") == "Walk",
                 parser.parse(activity.get("start_date")).timestamp()
                 > challenge.created_at.timestamp(),
             )
